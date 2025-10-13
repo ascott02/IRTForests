@@ -656,22 +656,6 @@ $$G(t) = 1 - \sum_k p_k^2$$
 
 ---
 
-# Tabular RF Reference (Breast Cancer)
-
-| Metric | Value |
-|---|---|
-| Samples / features | 569 / 30 |
-| RF test accuracy | 0.971 |
-| RF OOB accuracy | 0.965 |
-| ROC AUC | 0.997 |
-| Top features | worst concave points, worst perimeter, worst radius |
-
-- Provides a well-behaved baseline: high accuracy, small δ expected when we run IRT.
-- Feature rankings highlight geometric shape descriptors → contrast to image pipelines.
-- Script: `python scripts/run_rf_tabular_example.py --dataset breast_cancer`
-
----
-
 # IRT Fit (Study I Baseline, 1PL 600 epochs)
 
 - Optimizer: Adam lr=0.05, SVI Trace_ELBO, seed=7.
@@ -690,7 +674,6 @@ Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
 - **CIFAR-10 (PCA):** δ tail contains grayscale ships + occluded pets. Margin < −0.2, entropy > 2.2.
 - **CIFAR-10 (MobileNet):** Outliers shrink but persist for cat/dog overlap; δ still > 8 despite cleaner features.
 - **MNIST:** High δ digits stem from stroke noise (e.g., 9 vs 4). Entropy jumps above 1.9 only for these cases.
-- **Breast Cancer:** Expect δ near zero (not yet fitted) — contrast will highlight how clean tabular data behaves.
 - Actionable: focus audits on items with δ > 8 + low margins; they recur across embeddings.
 
 ---
