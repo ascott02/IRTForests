@@ -238,12 +238,13 @@ Completed: repo scaffold established with core directories, `requirements.txt`, 
 Artifacts staged (not executed yet):
 
 * `scripts/init_venv.sh` — one-shot venv + requirements installer.
-* `src/data_pipeline.py` — CIFAR-10 stratified sampler and PCA embedding CLI.
-* `notebooks/rf_irt.ipynb` — full workflow outline with TODO hooks.
+* `src/data_pipeline.py` — documented CIFAR-10 sampler + PCA embedding CLI with shape summaries.
+* `notebooks/rf_irt.ipynb` — workflow scaffold with reusable configs/TODOs.
+* `slides.md` — initial deck outlining goals, pipeline, and pre-execution roadmap.
 
 Next execution-focused steps:
 
 * [ ] Run `scripts/init_venv.sh` then execute subset + embedding CLI to materialize caches (T1).
 * [ ] Capture dataset split sizes and PCA shape summary in this README after first run.
-* [ ] Flesh out RF fitting, response matrix, and IRT sections in the notebook.
-* [ ] Start seeding `slides.md` with data/embedding visuals once outputs exist.
+* [ ] Flesh out RF fitting, response matrix, and IRT sections with executable code & diagnostics.
+* [ ] Materialize plots/metrics, then replace outline bullets in `slides.md` with visuals/examples.

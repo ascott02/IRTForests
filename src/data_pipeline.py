@@ -1,9 +1,18 @@
-"""Utilities to prepare CIFAR-10 subsets and feature embeddings.
+"""Data preparation utilities for the RF × IRT study.
 
-This module focuses on the reproducible data preparation steps used by the
-Random Forest × Item Response Theory study.  It handles downloading CIFAR-10,
-performing stratified subsampling, and persisting cached tensors for the rest
-of the pipeline.
+The module is intentionally lightweight so it can be imported both by
+command-line entry points and notebooks without executing heavy work on import.
+It provides three primary facilities:
+
+1. :class:`SubsetConfig` – structured configuration for consistent CIFAR-10
+    sampling.
+2. :func:`save_cifar10_subset` – idempotent download + stratified sampling that
+    materializes cached tensors on disk.
+3. :func:`compute_pca_embeddings` – embeddings from cached tensors via PCA,
+    returning both the saved path and useful shape metadata.
+
+None of these utilities perform work at import time, keeping dry-run scenarios
+cheap until the CLI or notebook drives execution.
 """
 from __future__ import annotations
 
@@ -60,7 +69,9 @@ def _stratified_indices(labels: np.ndarray, per_class: int, seed: int) -> np.nda
     for cls in range(10):
         cls_idx = np.where(labels == cls)[0]
         if len(cls_idx) < per_class:
-            raise ValueError(f"Requested {per_class} samples for class {cls}, only {len(cls_idx)} available")
+            raise ValueError(
+                f"Requested {per_class} samples for class {cls}, only {len(cls_idx)} available"
+            )
         indices.append(rng.choice(cls_idx, size=per_class, replace=False))
     return np.concatenate(indices)
 
