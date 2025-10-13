@@ -310,19 +310,36 @@ style: |
 
 <div class="columns">
   <div class="col">
+    <img src="figures/mobilenet/ability_vs_accuracy.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%; text-align:center;">Ability (θ) vs tree accuracy — Pearson 0.983</p>
+  </div>
+  <div class="col">
     <img src="figures/mobilenet/wright_map.png" style="width:100%; border:1px solid #ccc;" />
     <p style="font-size:85%; text-align:center;">Wright map: θ variance shrinks to 0.25</p>
   </div>
-  <div class="col">
+</div>
 
 - θ mean −0.21 ± 0.25: trees cluster closer together than PCA baseline (σ 0.55 → 0.25).
-- δ spans −8 to +10; hardest items remain animal lookalikes flagged in Study I.
+- Ability remains tightly coupled to per-tree accuracy; even weakest trees clear 40%.
 - Shared axis shows overlap where confident trees meet easy airplane/ship items.
 - Ability compression signals that feature quality, not tree diversity, now limits performance.
 
+---
+
+# Study II Diagnostics: δ vs Error Rate
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/mobilenet/difficulty_vs_error.png" style="width:95%; border:1px solid #ccc;" />
+  </div>
+  <div class="col">
+
+- Pearson 0.922: δ remains strongly aligned with mean tree error despite higher accuracy ceiling.
+- Hardest items (δ > 8) persist from PCA run — mostly cat/dog overlaps and ambiguous aircraft.
+- Easy zone (δ < −3) expands, showing MobileNet features unlock more “free points.”
+
   </div>
 </div>
-
 
 ---
 
@@ -385,15 +402,34 @@ style: |
 
 <div class="columns">
   <div class="col">
-    <img src="figures/mnist/wright_map.png" style="width:100%; border:1px solid #ccc;" />
-      <p style="font-size:85%; text-align:center;">Wright map: θ mean 4.23 ± 0.44; δ mean −1.75 ± 8.19</p>
+    <img src="figures/mnist/ability_vs_accuracy.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%; text-align:center;">Ability (θ) vs tree accuracy — Pearson 0.995</p>
   </div>
   <div class="col">
+    <img src="figures/mnist/wright_map.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%; text-align:center;">Wright map: θ mean 4.23 ± 0.44; δ mean −1.75 ± 8.19</p>
 
 - θ mean 4.23 ± 0.44: trees quickly separate easy digits, reflecting high consensus.
 - δ mean −1.75 ± 8.19 with heavy tails on ambiguous strokes.
 - Shared scale shows abundant overlap → most items are easy wins with a few hard spikes.
 - Provides contrast against CIFAR studies where ability mass sat below zero.
+
+  </div>
+</div>
+
+---
+
+# Study III Diagnostics: δ vs Error Rate
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/mnist/difficulty_vs_error.png" style="width:95%; border:1px solid #ccc;" />
+  </div>
+  <div class="col">
+
+- Pearson 0.962: δ spikes pinpoint the rare ambiguous digits despite overall high accuracy.
+- Outliers (δ > 12) correspond to stroke-collided 3/5/8 and 4/9 pairs flagged for curation.
+- Long negative tail shows the majority of digits are trivial for the ensemble.
 
   </div>
 </div>
@@ -513,4 +549,4 @@ Extremes listed in `data/irt_extremes.json` for manual inspection.
 - Run planned 2PL/3PL experiments (see `reports/discrimination_analysis_plan.md`) to get discrimination.
 - Compare tree ability with structural traits (depth, leaves) for richer diagnostics.
 - Extend edge-case audit: inspect δ>8 + margin<0 items across embeddings and datasets.
-- Render ability-vs-accuracy and δ-vs-error plots for MobileNet & MNIST runs to fully mirror Study I artifacts.
+- Hook the new diagnostics script into the notebook so plots regenerate alongside tables.
