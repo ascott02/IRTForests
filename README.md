@@ -83,7 +83,7 @@ Use this README as a **recursive prompt**. Each commit:
 * [x] Train `RandomForestClassifier(n_estimators=200, max_depth=None, n_jobs=-1)`.
 * [x] Save: accuracy, per‑class accuracy, confusion matrix (`data/rf_metrics.json`, `data/rf_confusion.npy`).
 * [x] Save: `feature_importances_` (Gini) and permutation importance (`data/rf_feature_importances.npy`, `data/rf_permutation_importance.csv`).
-* [ ] Compute per‑example **margin** = p(correct class) − max p(other classes).
+* [x] Compute per‑example **margin** = p(correct class) − max p(other classes) and per‑item entropy (`scripts/compute_rf_signals.py` → `data/rf_margins.npy`, `data/rf_entropy.npy`).
 
 **T3 – Build Response Matrix R**
 
@@ -98,8 +98,8 @@ Use this README as a **recursive prompt**. Each commit:
 
 **T5 – Comparative Analysis**
 
-* [ ] Plot **Wright Map**: tree abilities vs item difficulties on shared axis.
-* [ ] Correlate item difficulty (\delta) with RF **margin**, **entropy**, and **misclassification rate**; report Pearson/Spearman.
+* [x] Plot **Wright Map**: tree abilities vs item difficulties on shared axis (`figures/wright_map.png`).
+* [x] Correlate item difficulty (\delta) with RF **margin** and **entropy**; report Pearson/Spearman (`scripts/analyze_rf_irt_correlations.py` → `data/rf_irt_correlations.json`, scatter plots in `figures/`).
 * [ ] Identify top‑10 **hard items** (high (\delta)); visualize and inspect.
 * [ ] Class‑wise view: average (\delta) per class vs RF error per class.
 
@@ -121,12 +121,18 @@ Use this README as a **recursive prompt**. Each commit:
 - **Response matrix:** `data/response_matrix.npz` stores a `(200, 2000)` binary matrix (trees × items) with mean accuracy **0.1759** per tree (see `data/response_summary.json`).
 - **IRT fit:** `scripts/fit_irt.py` (SVI, 600 epochs, lr=0.05) yields tree ability mean **−11.14 ± 0.55** and item difficulty mean **5.90 ± 4.10**. Correlations: ability ↔ tree accuracy **0.999**, difficulty ↔ item error **0.950** (`data/irt_summary.json`).
 - **Diagnostics:** Parameter histograms (`figures/ability_hist.png`, `figures/difficulty_hist.png`), ability vs. accuracy scatter (`figures/ability_vs_accuracy.png`), difficulty vs. error scatter (`figures/difficulty_vs_error.png`), SVI loss curve (`figures/irt_training_loss.png`). Extremes captured in `data/irt_extremes.json`.
+- **RF signals:** Margins average **−0.0028 ± 0.10**, entropy average **2.15 ± 0.13** (`data/rf_signal_summary.json`).
+- **Cross-model correlations:** δ vs margin Pearson **−0.83**, δ vs entropy Pearson **0.68** with similar Spearman trends (`data/rf_irt_correlations.json`; plots `figures/difficulty_vs_margin.png`, `figures/difficulty_vs_entropy.png`).
+- **Wright map:** Combined θ/δ histogram overlay stored at `figures/wright_map.png` for slide inclusion.
 
 Run the IRT stage end-to-end:
 
 ```bash
 source .venv/bin/activate
 python scripts/fit_irt.py --epochs 600 --learning-rate 0.05 --verbose --log-every 100
+python scripts/compute_rf_signals.py
+python scripts/analyze_rf_irt_correlations.py
+python scripts/plot_wright_map.py
 ```
 
 
@@ -247,14 +253,14 @@ marp-cli  # optional for slide rendering
 
 ---
 
-## Next Edit Cycle (post-IRT run)
+## Next Edit Cycle (after RF signal analysis)
 
-Completed this round: CIFAR-10 subset + embeddings cached, Random Forest trained with metrics/importance saved, response matrix generated, and 1PL fit captured with diagnostics & extremes.
+Completed this round: RF margins/entropy derived, δ correlations quantified, and Wright map generated for storytelling.
 
 Upcoming priorities:
 
-* [ ] Compute per-example RF **margin** and entropy on the test split; persist to `data/rf_margins.npy` (T2/T5).
-* [ ] Correlate IRT difficulty with RF margins/confidence and record Pearson/Spearman stats (`data/correlations.json`) plus scatter plots (T5).
-* [ ] Produce a Wright Map or ranked ridge plot combining ability & difficulty distributions (Matplotlib or Seaborn) for inclusion in the slide deck (T5/T6).
-* [ ] Surface class-level difficulty summaries and merge into `slides.md` + `README.md` narrative (T5/T6).
-* [ ] Migrate the executed workflow into `notebooks/rf_irt.ipynb` for a single-click rerun, and wire slides to the freshly generated figures (T6).
+* [ ] Visualize top-10 hardest/easiest items (thumbnails) and integrate qualitative insights (T5).
+* [ ] Extend correlations to include RF confidence/entropy vs. per-class error summaries (T5).
+* [ ] Embed new analyses into `notebooks/rf_irt.ipynb` for a reproducible single-run experience (T6).
+* [ ] Update `slides.md` with confusion matrix, correlation tables, and item examples once assets are ready (T6).
+* [ ] Explore alternative embeddings or RF configurations to test robustness of θ/δ patterns (T7).

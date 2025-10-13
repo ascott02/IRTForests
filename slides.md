@@ -116,6 +116,36 @@ High-difficulty items correlate strongly with tree error (ρ ≈ 0.95).
 
 ---
 
+# Difficulty vs RF Signals
+
+<div class="columns">
+  <div class="col">
+
+![δ vs margin](figures/difficulty_vs_margin.png)
+
+  </div>
+  <div class="col">
+
+![δ vs entropy](figures/difficulty_vs_entropy.png)
+
+  </div>
+</div>
+
+- Pearson(δ, margin) = **−0.83**, Spearman = **−0.79** → harder items drive negative margins.
+- Pearson(δ, entropy) = **0.68**, Spearman = **0.55** → higher difficulty aligns with uncertain trees.
+
+---
+
+# Wright Map Snapshot
+
+![Wright map](figures/wright_map.png)
+
+- Tree abilities cluster tightly (θ ≈ −11), suggesting limited diversity among respondents.
+- Item difficulties span a wide range (δ ∈ [−10.7, 14.3]); tail heavy on very hard items.
+- Shared axis highlights sparse overlap where strong trees meet easy items.
+
+---
+
 # Training Loss & Distributions
 
 <div class="columns">
@@ -148,8 +178,8 @@ Extremes listed in `data/irt_extremes.json` for manual inspection.
 
 # Next Steps
 
-- Compute RF per-example margins & entropy; compare with δ.
-- Build Wright map / ridge plot combining θ & δ distributions.
-- Integrate workflow into `notebooks/rf_irt.ipynb` for reproducibility.
-- Swap in CNN backbone embeddings to test robustness.
-- Expand slides with confusion matrix, margin correlations, and image examples.
+- Surface top-10 hardest/easiest CIFAR-10 examples with visual inspection.
+- Add class-level aggregates (δ vs RF error) and confusion matrix visuals.
+- Fold scripts into `notebooks/rf_irt.ipynb` for reproducible reruns.
+- Explore alternate embeddings (e.g., MobileNet) to test θ/δ stability.
+- Prepare qualitative insights slide pairing images with margin/δ extremes.
