@@ -10,6 +10,8 @@ It provides three primary facilities:
     materializes cached tensors on disk.
 3. :func:`compute_pca_embeddings` – embeddings from cached tensors via PCA,
     returning both the saved path and useful shape metadata.
+4. :func:`compute_mobilenet_embeddings` – feature extraction via an ImageNet
+    pre-trained MobileNet backbone for richer representations.
 
 None of these utilities perform work at import time, keeping dry-run scenarios
 cheap until the CLI or notebook drives execution.
@@ -22,11 +24,17 @@ from dataclasses import dataclass
 from typing import Dict, Tuple
 
 import numpy as np
+import torch
+import torch.nn.functional as F
 from sklearn.decomposition import PCA
+from torch.utils.data import DataLoader, TensorDataset
 from torchvision import datasets, transforms
+from torchvision.models import MobileNet_V3_Large_Weights, mobilenet_v3_large
 
 CIFAR10_MEAN = (0.4914, 0.4822, 0.4465)
 CIFAR10_STD = (0.2023, 0.1994, 0.2010)
+IMAGENET_MEAN = (0.4850, 0.4560, 0.4060)
+IMAGENET_STD = (0.2290, 0.2240, 0.2250)
 
 
 @dataclass(frozen=True)
@@ -198,6 +206,87 @@ def compute_pca_embeddings(
     return out_path, summary
 
 
+def compute_mobilenet_embeddings(
+    subset_path: pathlib.Path,
+    *,
+    out_path: pathlib.Path | None = None,
+    batch_size: int = 64,
+    image_size: int = 224,
+    device: str | torch.device | None = None,
+) -> Tuple[pathlib.Path, Dict[str, Tuple[int, ...]]]:
+    """Compute MobileNet embeddings from a saved CIFAR-10 subset archive.
+
+    The cached tensors are first restored to their un-normalised 0–1 pixel
+    domain before being resized and normalised to the ImageNet statistics
+    expected by the MobileNet backbone. The resulting penultimate feature
+    vectors are persisted alongside the original labels for downstream use.
+    """
+
+    resolved_device = torch.device(device) if device is not None else torch.device(
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )
+    weights = MobileNet_V3_Large_Weights.DEFAULT
+    model = mobilenet_v3_large(weights=weights)
+    model.to(resolved_device)
+    model.eval()
+
+    subset = np.load(subset_path)
+    cifar_mean = torch.tensor(CIFAR10_MEAN, dtype=torch.float32).view(1, 3, 1, 1)
+    cifar_std = torch.tensor(CIFAR10_STD, dtype=torch.float32).view(1, 3, 1, 1)
+    imagenet_mean = torch.tensor(IMAGENET_MEAN, dtype=torch.float32).view(1, 3, 1, 1).to(resolved_device)
+    imagenet_std = torch.tensor(IMAGENET_STD, dtype=torch.float32).view(1, 3, 1, 1).to(resolved_device)
+
+    def _extract(split: str) -> np.ndarray:
+        images = torch.from_numpy(subset[f"x_{split}"].astype(np.float32))
+        images = images * cifar_std + cifar_mean
+        dataset = TensorDataset(images)
+        loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+        embeddings = []
+        with torch.no_grad():
+            for (batch,) in loader:
+                batch = batch.to(resolved_device)
+                batch = F.interpolate(batch, size=(image_size, image_size), mode="bilinear", align_corners=False)
+                batch = batch.clamp(0.0, 1.0)
+                batch = (batch - imagenet_mean) / imagenet_std
+                features = model.features(batch)
+                pooled = model.avgpool(features)
+                flattened = torch.flatten(pooled, 1)
+                embeddings.append(flattened.cpu())
+        return torch.cat(embeddings, dim=0).numpy()
+
+    train_embeddings = _extract("train")
+    val_embeddings = _extract("val")
+    test_embeddings = _extract("test")
+
+    if out_path is None:
+        out_path = subset_path.parent / "cifar10_mobilenet_embeddings.npz"
+
+    np.savez(
+        out_path,
+        train_embeddings=train_embeddings,
+        val_embeddings=val_embeddings,
+        test_embeddings=test_embeddings,
+        y_train=subset["y_train"],
+        y_val=subset["y_val"],
+        y_test=subset["y_test"],
+        classes=subset["classes"],
+        mean=subset["mean"],
+        std=subset["std"],
+        feature_dim=np.array([train_embeddings.shape[1]], dtype=np.int64),
+        image_size=np.array([image_size], dtype=np.int64),
+        backbone=np.array(["mobilenet_v3_large"]),
+        device=np.array([str(resolved_device)]),
+    )
+    summary = {
+        "train_embeddings": train_embeddings.shape,
+        "val_embeddings": val_embeddings.shape,
+        "test_embeddings": test_embeddings.shape,
+        "feature_dim": train_embeddings.shape[1],
+        "device": str(resolved_device),
+    }
+    return out_path, summary
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Prepare CIFAR-10 subset for RF × IRT study")
     parser.add_argument("--train-per-class", type=int, default=1000)
@@ -207,8 +296,23 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--data-root", type=pathlib.Path, default=pathlib.Path("data"))
     parser.add_argument("--out", type=pathlib.Path, default=None)
-    parser.add_argument("--embeddings", action="store_true", help="Also compute PCA embeddings for cached subset")
+    parser.add_argument("--embeddings", action="store_true", help="Also compute embeddings for cached subset")
+    parser.add_argument(
+        "--embedding-type",
+        choices=["pca", "mobilenet"],
+        default="pca",
+        help="Embedding backend to compute when --embeddings is supplied",
+    )
     parser.add_argument("--n-components", type=int, default=128)
+    parser.add_argument("--embeddings-out", type=pathlib.Path, default=None, help="Destination for embeddings archive")
+    parser.add_argument("--mobilenet-batch-size", type=int, default=64)
+    parser.add_argument("--mobilenet-image-size", type=int, default=224)
+    parser.add_argument(
+        "--mobilenet-device",
+        type=str,
+        default=None,
+        help="Force the device used for MobileNet feature extraction (e.g. cuda:0)",
+    )
     parser.add_argument("--no-subset", action="store_true", help="Skip subset generation and reuse existing archive")
 
     args = parser.parse_args()
@@ -233,8 +337,22 @@ def main() -> None:
         print(f"Saved CIFAR-10 subset to {subset_path.resolve()}")
 
     if args.embeddings:
-        embeddings_path, summary = compute_pca_embeddings(subset_path, args.n_components)
-        print(f"Saved PCA embeddings to {embeddings_path.resolve()}")
+        if args.embedding_type == "pca":
+            embeddings_path, summary = compute_pca_embeddings(
+                subset_path,
+                n_components=args.n_components,
+                out_path=args.embeddings_out,
+            )
+        else:
+            embeddings_path, summary = compute_mobilenet_embeddings(
+                subset_path,
+                out_path=args.embeddings_out,
+                batch_size=args.mobilenet_batch_size,
+                image_size=args.mobilenet_image_size,
+                device=args.mobilenet_device,
+            )
+
+        print(f"Saved {args.embedding_type.upper()} embeddings to {embeddings_path.resolve()}")
         print(
             "Shapes → train:{train} val:{val} test:{test}".format(
                 train=summary["train_embeddings"],
