@@ -5,7 +5,6 @@ theme: default
 class: invert
 paginate: true
 math: katex
-
 style: |
   section {
     font-size: 160%;
@@ -22,6 +21,16 @@ style: |
   .col {
     flex: 1;
   }
+footer: ATS VLM Lab UTA Fall 2025
+---
+
+# IRTForests
+
+### Random Forest × Item Response Theory Diagnostics
+
+<p style="font-size:80%; margin-top:2.5em;">Andrew T. Scott · Fall 2025</p>
+<p style="font-size:70%;"><a href="https://github.com/ascott02/IRTForests">github.com/ascott02/IRTForests</a></p>
+
 ---
 
 # Random Forest × Item Response Theory
@@ -32,12 +41,21 @@ style: |
 
 ---
 
+# GenAI In the Loop Scientific Exploration
+
+- Started from a concise README spec describing goals, datasets, and desired diagnostics.
+- Iterated with notebook + CLI automation to run every experiment end-to-end.
+- Generated figures, tables, and reports that surfaced ability/difficulty patterns.
+- Translated the workflow into this deck, tightening narrative and visuals each pass.
+
+---
+
 # Motivation & Guiding Questions
 
-- Why do some trees in a strong ensemble still behave erratically?
-- Which images systematically confuse the forest, and can we surface them automatically?
-- How do richer features shift the balance between tree skill (θ) and item difficulty (δ)?
-- Use IRT to translate random forest signals into actionable curation insights.
+- Random forests glue together many weak classifiers; from an IRT lens each tree is a respondent with latent ability ($\theta$).
+- Held-out images act as items whose difficulty ($\delta$) we can infer by watching which trees succeed or fail.
+- What can θ and δ tell us about dataset quality, backbone choice, and where ambiguity still lives?
+- Can these signals guide future studies—pruning weak trees, curating hard items, and iterating faster with gen-AI tooling?
 
 ---
 
