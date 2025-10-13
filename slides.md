@@ -2,9 +2,13 @@
 
 marp: true
 theme: default
+class: invert
 paginate: true
 
 style: |
+  section {
+    font-size: 180%;
+  }
   pre {
     vertical-align: text-top;
     font-size: 60%;
@@ -107,6 +111,14 @@ style: |
 
 ---
 
+# Study I: CIFAR-10 + PCA-128 Embeddings
+
+- Baseline vision setup: 64×64 resize + PCA to 128 dims.
+- 200-tree Random Forest trained on embeddings; response matrix size 200 × 2000.
+- Use this run to introduce IRT diagnostics and identify weak spots.
+
+---
+
 # Data & Embeddings Snapshot
 
 - PCA-128 embeddings, mean 0.0 ± 0.06 per feature.
@@ -115,7 +127,24 @@ style: |
 
 ---
 
-# Random Forest Results (PCA baseline)
+# RF Results (MobileNet-V3)
+
+| Metric | Value |
+|---|---|
+| Test / Val / OOB acc | 0.8090 / 0.8135 / 0.7967 |
+| Per-class range | 0.68 (cat) → 0.915 (ship) |
+| Mean tree accuracy | 0.4817 |
+| Mean margin / entropy | 0.2806 / 1.4663 |
+| δ ↔ margin (Pearson) | −0.8825 |
+| δ ↔ entropy (Pearson) | 0.8113 |
+
+- Pretrained features boost accuracy by 37 pp while maintaining strong δ correlations.
+- Higher margins + lower entropy show the forest is confident except on stubborn animal classes.
+- Artifacts live under `data/mobilenet/` (metrics, response matrix, signals, IRT outputs).
+
+---
+
+# RF Results (PCA-128)
 
 | Metric | Value |
 |---|---|
@@ -132,22 +161,11 @@ style: |
 
 ---
 
-# Embedding Comparison
+# Study II: CIFAR-10 + MobileNet Embeddings
 
-| Metric | PCA-128 | MobileNet-V3 (960-D) |
-|---|---|---|
-| Test accuracy | 0.4305 | **0.8090** |
-| Validation accuracy | 0.4145 | **0.8135** |
-| OOB accuracy | 0.3730 | **0.7967** |
-| Mean margin | −0.0028 | **0.2806** |
-| Mean entropy | **2.1503** | 1.4663 |
-| δ ↔ margin (Pearson) | −0.8286 | **−0.8825** |
-| δ ↔ entropy (Pearson) | 0.6782 | **0.8113** |
-| θ std | **0.5473** | 0.2549 |
-| δ std | 4.1029 | **4.6663** |
-
-- MobileNet sharply improves accuracy and margin separation while preserving strong δ correlations.
-- Narrow θ variance suggests trees become more uniformly strong; wider δ range helps triage hard cases.
+- Swap PCA features for MobileNet-V3 (960-D) while keeping tree count and splits constant.
+- Measure how richer features alter RF metrics, margins/entropy, and IRT parameter spreads.
+- Use as a reality check before expanding to new datasets.
 
 ---
 
@@ -231,6 +249,25 @@ Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
 
   </div>
 </div>
+
+---
+
+# MobileNet Difficulty vs RF Signals
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/mobilenet/mobilenet_difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%;">δ vs margin (Pearson −0.88)</p>
+  </div>
+  <div class="col">
+    <img src="figures/mobilenet/mobilenet_difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%;">δ vs entropy (Pearson 0.81)</p>
+  </div>
+</div>
+
+- MobileNet compresses the easy cluster (high margin, low entropy) while isolating true hard cases.
+- Higher correlation magnitudes indicate better alignment between δ and RF uncertainty signals.
+- Wright map (next slide) shows θ variance shrinking to 0.25 — trees converge toward similar ability.
 
 ---
 
@@ -346,6 +383,7 @@ Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
 - Hardest items (δ > 13) align with CIFAR-10 ships/airplanes confusions.
 - Easiest items (δ < −9.5) mostly belong to truck/ship classes with distinctive features.
 - MobileNet run yields θ variance halved and pushes accuracy to 81%, confirming sensitivity to embeddings.
+- MobileNet difficulty plots confirm tighter δ alignment (|corr| ≥ 0.81) and isolate stubborn animal confusions.
 - MNIST pipeline shows how clean data collapses entropy while keeping δ informative for rare ambiguities.
 - Loss curve still descending: consider more epochs or lower lr for finer convergence.
 
