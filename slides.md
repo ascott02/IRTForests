@@ -4,10 +4,11 @@ marp: true
 theme: default
 class: invert
 paginate: true
+math: katex
 
 style: |
   section {
-    font-size: 180%;
+    font-size: 160%;
   }
   pre {
     vertical-align: text-top;
@@ -31,57 +32,128 @@ style: |
 
 ---
 
-# Item Response Theory Primer
+# Why Item Response Theory for Random Forests?
+
+- Treat each tree as a “test taker” answering every held-out image.
+- Latent **ability** ($\theta$) separates reliable trees from drifted or shallow ones.
+- Latent **difficulty** ($\delta$) surfaces mislabeled or ambiguous images without manual review.
+- Shared scale lets us compare studies, backbones, and curation strategies apples-to-apples.
+
+---
+
+# Item Response Theory Building Blocks
 
 <div class="columns">
   <div class="col">
 
-**Key Terms**
+**Core Terms**
 
-- Ability (θ): latent skill of a respondent (tree).
-- Difficulty (δ): latent hardness of an item (image).
-- Discrimination (a): slope/steepness capturing how sharply success changes near δ.
-- Guessing (c): lower asymptote (3PL); optional for multi-choice exams.
+- Ability ($\theta$): respondent skill; higher → better odds of a correct answer.
+- Difficulty ($\delta$): item hardness; higher → harder even for strong respondents.
+- Discrimination ($a$): slope of the logistic curve near $\delta$.
+- Guessing ($c$): lower bound for multiple-choice exams (rare in our setup).
 
   </div>
   <div class="col">
 
-**Models**
+**Ensemble Analogy**
 
-- 1PL/Rasch: P(correct) = sigmoid(theta − delta); single slope for every item.
-- 2PL: P = sigmoid(a * (theta − delta)) — each item learns its own discrimination "a".
-- 3PL: adds a guessing floor c: P = c + (1 − c) * sigmoid(a * (theta − delta)).
-- Outputs give interpretable maps of strong trees, ambiguous items, and high-informative regions.
+- Respondents → decision trees evaluated on a common test set.
+- Items → images; responses are binary (tree got it right?).
+- Response matrix $R_{ij} \in \{0,1\}$ fuels variational IRT fitting.
+- Outputs: distributions over $\theta_i$ and $\delta_j$ plus information curves.
 
   </div>
 </div>
 
 ---
 
-# Random Forest Refresher
+# Rasch (1PL) Model in One Picture
 
 <div class="columns">
   <div class="col">
 
-**Ensemble Mechanics**
+$$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j)}}$$
 
-- Bagging of decision trees (bootstrap + feature subsampling).
-- Each tree votes; majority (or probability average) yields prediction.
-- Strength from low-bias trees + reduced variance via averaging.
-- Key levers: number of trees, max depth, feature subsampling, leaf size.
+- Single global slope ensures parameters live on a shared logit scale.
+- $(\theta - \delta) = 0$ ⇒ 50% chance of success; shifts left/right flip odds.
+- Fisher information peaks where curves are steepest → ideal for spotting uncertain regions.
+
+  </div>
+  <div class="col" style="text-align:center;">
+    <img src="figures/irt/rasch_curve.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%;">1PL logistic curves for items of varying difficulty</p>
+  </div>
+</div>
+
+---
+
+# What We Extract from IRT
+
+- **Ability histograms**: flag inconsistent or low-skill trees worth pruning.
+- **Difficulty ladders**: highlight ambiguous or mislabeled items for relabeling.
+- **Wright maps**: overlay $\theta$ and $\delta$ to see coverage gaps.
+- **Information curves**: identify where ensemble confidence is fragile.
+- These diagnostics complement RF metrics by focusing on *who* struggles and *why*.
+
+---
+
+# Random Forest Mechanics (Deeper Dive)
+
+<div class="columns">
+  <div class="col">
+
+**Bootstrap Aggregation**
+
+- Sample $n$ examples with replacement per tree; leave-one-out OOB estimates follow.
+- Feature subsampling at each split decorrelates trees and trims variance.
+- Majority vote or probability averaging reduces variance relative to any single tree.
 
   </div>
   <div class="col">
 
-**Signals We Track**
+**Hyperparameters that Matter**
 
-- Per-tree accuracy → ability (θ) comparison with IRT.
-- Margins = p(true) − max p(other) highlight high/low confidence.
-- Entropy over class probabilities measures tree disagreement.
-- Feature importances & permutation scores remain our global view.
+- $n_{trees}$ controls variance reduction ceiling.
+- Max depth / min samples per leaf shape bias vs variance.
+- Max features governs how diverse each tree becomes.
+- Class weights & sample balancing steer towards rare classes.
 
   </div>
 </div>
+
+---
+
+# CART Splits & Gini Impurity
+
+- Trees grow by selecting the feature/threshold minimizing impurity after the split.
+- **Gini impurity** for node $t$ with class proportions $p_k$:
+
+$$G(t) = 1 - \sum_k p_k^2$$
+
+- Split gain: $\Delta G = G(t) - \sum_{child} \frac{|t_{child}|}{|t|} G(t_{child})$.
+- Alternative is entropy $H(t) = -\sum_k p_k \log p_k$; we track both for diagnostics.
+- Deep nodes with tiny $|t|$ overfit; pruning or depth limits keep signals meaningful.
+
+---
+
+# Margins, Entropy, and Ensemble Confidence
+
+- **Margin**: $m(x) = P(\hat{y}=y_{true}) - \max_{c \neq y_{true}} P(\hat{y}=c)$.
+  - Near 0 → ambiguous votes; negative → systematic misclassification.
+- **Entropy** over class probabilities captures total disagreement across trees.
+- Pairing $m(x)$ and entropy with $\delta$ spots mislabeled or out-of-distribution examples.
+- Track margin trajectories per item to measure progress after curation.
+
+---
+
+# Variable Importance Playbook
+
+- **Mean decrease in impurity (MDI)**: sum of Gini drops attributable to each feature.
+- **Permutation importance**: shuffle feature $k$, re-score; larger drops → higher reliance.
+- **SHAP / local attributions**: optional, clarify per-item influence.
+- Cross-study comparison of importance vectors reveals when new embeddings truly shift focus.
+- Coupled with IRT, we can ask whether hard items lack salient features or trees misuse them.
 
 ---
 
@@ -195,7 +267,7 @@ style: |
     <p style="font-size:85%; text-align:center;">Ability (θ) vs tree accuracy — Spearman ≈ 0.99</p>
   </div>
   <div class="col">
-    <img src="figures/wright_map.png" style="width:100%; border:1px solid #ccc;" />
+    <img width="97%" src="figures/wright_map.png" style="width:95%; border:1px solid #ccc;" />
     <p style="font-size:85%; text-align:center;">Wright map: θ cluster near −11; δ stretches to 14</p>
   </div>
 </div>
@@ -334,7 +406,7 @@ style: |
     <p style="font-size:85%; text-align:center;">Ability (θ) vs tree accuracy — Pearson 0.983</p>
   </div>
   <div class="col">
-    <img src="figures/mobilenet/wright_map.png" style="width:100%; border:1px solid #ccc;" />
+    <img width="97%" src="figures/mobilenet/wright_map.png" style="width:100%; border:1px solid #ccc;" />
     <p style="font-size:85%; text-align:center;">Wright map: θ variance shrinks to 0.25</p>
   </div>
 </div>
@@ -432,20 +504,24 @@ style: |
 
 <div class="columns">
   <div class="col">
-    <img src="figures/mnist/ability_vs_accuracy.png" style="width:100%; border:1px solid #ccc;" />
+  <center>
+    <img width="75%" src="figures/mnist/ability_vs_accuracy.png" style="width:100%; border:1px solid #ccc;" />
     <p style="font-size:85%; text-align:center;">Ability (θ) vs tree accuracy — Pearson 0.995</p>
+  </center>
   </div>
   <div class="col">
-    <img src="figures/mnist/wright_map.png" style="width:100%; border:1px solid #ccc;" />
+  <center>
+    <img width="74%" src="figures/mnist/wright_map.png" style="width:100%; border:1px solid #ccc;" />
     <p style="font-size:85%; text-align:center;">Wright map: θ mean 4.23 ± 0.44; δ mean −1.75 ± 8.19</p>
+  </center>
+  </div>
+</div>
 
 - θ mean 4.23 ± 0.44: trees quickly separate easy digits, reflecting high consensus.
 - δ mean −1.75 ± 8.19 with heavy tails on ambiguous strokes.
 - Shared scale shows abundant overlap → most items are easy wins with a few hard spikes.
 - Provides contrast against CIFAR studies where ability mass sat below zero.
 
-  </div>
-</div>
 
 ---
 
