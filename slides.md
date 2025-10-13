@@ -88,6 +88,16 @@ style: |
 
 ---
 
+# Embedding Comparison
+
+- **Baseline (PCA‑128):** Accuracy 43.1%, margin mean ≈ −0.003, δ↔margin Pearson −0.83.
+- **MobileNet-V3 (960-D):** Accuracy 80.9%, margin mean ≈ 0.281, δ↔margin Pearson −0.88.
+- Entropy drops from 2.15 → 1.47 and ability spread tightens (σ: 0.55 → 0.25).
+- Difficulty spread widens slightly (σ: 4.10 → 4.67) indicating richer separation of hard/easy items.
+- Full table: `reports/embedding_comparison.md`.
+
+---
+
 # Confusion Matrix View
 
 ![Normalized confusion matrix](figures/rf_confusion_matrix.png)

@@ -114,20 +114,18 @@ Use this README as a **recursive prompt**. Each commit:
 
 ---
 
-## Current Status (600-epoch 1PL run)
+- ## Current Status (PCA vs MobileNet runs)
 
-- **Data prep:** Stratified CIFAR-10 subset (train 10k / val 2k / test 2k). PCA embeddings cached in `data/cifar10_embeddings.npz` with 128 features per example.
-- **Random Forest:** Overall test accuracy **0.4305**, validation **0.4145**, OOB **0.3730**. Per-class stats logged in `data/rf_metrics.json`; confusion matrix serialized to `data/rf_confusion.npy`.
-- **Confusion matrix:** Normalized heatmap at `figures/rf_confusion_matrix.png` highlights cat/dog, bird/airplane, horse/deer confusions.
-- **Response matrix:** `data/response_matrix.npz` stores a `(200, 2000)` binary matrix (trees × items) with mean accuracy **0.1759** per tree (see `data/response_summary.json`).
-- **IRT fit:** `scripts/fit_irt.py` (SVI, 600 epochs, lr=0.05) yields tree ability mean **−11.14 ± 0.55** and item difficulty mean **5.90 ± 4.10**. Correlations: ability ↔ tree accuracy **0.999**, difficulty ↔ item error **0.950** (`data/irt_summary.json`).
-- **Diagnostics:** Parameter histograms (`figures/ability_hist.png`, `figures/difficulty_hist.png`), ability vs. accuracy scatter (`figures/ability_vs_accuracy.png`), difficulty vs. error scatter (`figures/difficulty_vs_error.png`), SVI loss curve (`figures/irt_training_loss.png`). Extremes captured in `data/irt_extremes.json`.
-- **RF signals:** Margins average **−0.0028 ± 0.10**, entropy average **2.15 ± 0.13** (`data/rf_signal_summary.json`).
-- **Cross-model correlations:** δ vs margin Pearson **−0.83**, δ vs entropy Pearson **0.68** with similar Spearman trends (`data/rf_irt_correlations.json`; plots `figures/difficulty_vs_margin.png`, `figures/difficulty_vs_entropy.png`).
-- **Wright map:** Combined θ/δ histogram overlay stored at `figures/wright_map.png` for slide inclusion.
-- **Qualitative inspection:** Hardest vs easiest CIFAR-10 examples exported via `figures/hardest_items_test.png` and `figures/easiest_items_test.png` for storytelling.
-- **Class-level summary:** `data/class_difficulty_summary.json` + `figures/class_difficulty_vs_error.png` reveal that cats, horses, dogs drive δ spikes aligned with high RF error.
-- **Report exports:** Notebook cell writes `reports/class_difficulty_summary.md` and `reports/rf_irt_summary.json` for slide-ready tables and correlation stats.
+- **Data prep:** Stratified CIFAR-10 subset (train 10k / val 2k / test 2k). PCA embeddings cached in `data/cifar10_embeddings.npz` (128-D) and MobileNet-V3 features cached in `data/cifar10_mobilenet_embeddings.npz` (960-D).
+- **Random Forest (PCA):** Overall test accuracy **0.4305**, validation **0.4145**, OOB **0.3730**. Per-class stats logged in `data/rf_metrics.json`; confusion matrix serialized to `data/rf_confusion.npy`.
+- **Random Forest (MobileNet):** Overall test accuracy **0.8090**, validation **0.8135**, OOB **0.7967** with per-class accuracies 0.68–0.92 (`data/mobilenet/rf_metrics.json`).
+- **Response matrices:** PCA run stored at `data/response_matrix.npz` (mean tree accuracy **0.1759**); MobileNet run stored at `data/mobilenet/response_matrix.npz` (mean tree accuracy **0.4817**).
+- **IRT fits:** PCA summary in `data/irt_summary.json` (θ mean **−11.14 ± 0.55**, δ mean **5.90 ± 4.10**); MobileNet summary in `data/mobilenet/irt_summary.json` (θ mean **−0.21 ± 0.25**, δ mean **0.07 ± 4.67**). Both trained for 600 epochs via `scripts/fit_irt.py`.
+- **Diagnostics:** Shared plots for PCA (`figures/*.png`) and MobileNet (`figures/mobilenet/*.png`) cover histograms, loss curves, Wright maps, and δ vs signal scatterplots.
+- **RF signals:** PCA margins average **−0.0028**, entropy **2.15**; MobileNet margins **0.2806**, entropy **1.47** (JSON summaries in `data/rf_signal_summary.json` and `data/mobilenet/rf_signal_summary.json`).
+- **Cross-model correlations:** PCA δ↔margin Pearson **−0.83**, δ↔entropy **0.68** vs. MobileNet δ↔margin **−0.88**, δ↔entropy **0.81** (`data/rf_irt_correlations.json`, `data/mobilenet/rf_irt_correlations.json`).
+- **Qualitative inspection:** CIFAR-10 hardest/easiest montages (PCA) plus new MobileNet Wright map for improved alignment between ability and accuracy.
+- **Reports:** `reports/embedding_comparison.md` captures a side-by-side metric table; notebook exports still provide class summaries and run metadata (`reports/class_difficulty_summary.md`, `reports/rf_irt_summary.json`).
 
 Run the IRT stage end-to-end:
 
