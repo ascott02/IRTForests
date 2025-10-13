@@ -75,26 +75,26 @@ Use this README as a **recursive prompt**. Each commit:
 
 **T1 – Data & Embeddings**
 
-* [ ] Download CIFAR‑10 via `torchvision`.
-* [ ] Build embeddings (choose A or B above). Cache to `data/` and log shapes.
+* [x] Download CIFAR‑10 via `torchvision`.
+* [x] Build embeddings (PCA‑128) cached to `data/cifar10_embeddings.npz` (shape `(12000, 128)`).
 
 **T2 – Random Forest**
 
-* [ ] Train `RandomForestClassifier(n_estimators=200, max_depth=None, n_jobs=-1)`.
-* [ ] Save: accuracy, per‑class accuracy, confusion matrix.
-* [ ] Save: `feature_importances_` (Gini) and permutation importance (via `sklearn.inspection.permutation_importance`).
+* [x] Train `RandomForestClassifier(n_estimators=200, max_depth=None, n_jobs=-1)`.
+* [x] Save: accuracy, per‑class accuracy, confusion matrix (`data/rf_metrics.json`, `data/rf_confusion.npy`).
+* [x] Save: `feature_importances_` (Gini) and permutation importance (`data/rf_feature_importances.npy`, `data/rf_permutation_importance.csv`).
 * [ ] Compute per‑example **margin** = p(correct class) − max p(other classes).
 
 **T3 – Build Response Matrix R**
 
-* [ ] Collect each tree’s predicted label on **test**. `R[i, j] = 1 if tree_i predicts y_j correctly else 0`.
-* [ ] Persist `R` (e.g., `np.save('data/response_matrix.npy', R)`).
+* [x] Collect each tree’s predicted label on **test**. `R` stored in `data/response_matrix.npz` (shape `(200, 2000)`).
+* [x] Persist `R` (e.g., `np.save('data/response_matrix.npy', R)`).
 
 **T4 – IRT Fit**
 
-* [ ] Fit **1PL (Rasch)** using `py-irt` (or fallback `pyirt`).
-* [ ] Extract (\theta) for trees, (\delta) for items (and (a) if using 2PL).
-* [ ] Validate convergence; plot histograms of (\theta), (\delta).
+* [x] Fit **1PL (Rasch)** using `py-irt` via `scripts/fit_irt.py` (SVI, 600 epochs).
+* [x] Extract (\theta) for trees, (\delta) for items (`data/irt_parameters.npz`).
+* [x] Validate convergence; plot histograms of (\theta), (\delta) (`figures/ability_hist.png`, `figures/difficulty_hist.png`) and monitor loss (`figures/irt_training_loss.png`).
 
 **T5 – Comparative Analysis**
 
@@ -113,6 +113,22 @@ Use this README as a **recursive prompt**. Each commit:
 * [ ] Optional: try **2PL** and compare discrimination (a) with RF **tree depth** or **leaf count**.
 
 ---
+
+## Current Status (600-epoch 1PL run)
+
+- **Data prep:** Stratified CIFAR-10 subset (train 10k / val 2k / test 2k). PCA embeddings cached in `data/cifar10_embeddings.npz` with 128 features per example.
+- **Random Forest:** Overall test accuracy **0.4305**, validation **0.4145**, OOB **0.3730**. Per-class stats logged in `data/rf_metrics.json`; confusion matrix serialized to `data/rf_confusion.npy`.
+- **Response matrix:** `data/response_matrix.npz` stores a `(200, 2000)` binary matrix (trees × items) with mean accuracy **0.1759** per tree (see `data/response_summary.json`).
+- **IRT fit:** `scripts/fit_irt.py` (SVI, 600 epochs, lr=0.05) yields tree ability mean **−11.14 ± 0.55** and item difficulty mean **5.90 ± 4.10**. Correlations: ability ↔ tree accuracy **0.999**, difficulty ↔ item error **0.950** (`data/irt_summary.json`).
+- **Diagnostics:** Parameter histograms (`figures/ability_hist.png`, `figures/difficulty_hist.png`), ability vs. accuracy scatter (`figures/ability_vs_accuracy.png`), difficulty vs. error scatter (`figures/difficulty_vs_error.png`), SVI loss curve (`figures/irt_training_loss.png`). Extremes captured in `data/irt_extremes.json`.
+
+Run the IRT stage end-to-end:
+
+```bash
+source .venv/bin/activate
+python scripts/fit_irt.py --epochs 600 --learning-rate 0.05 --verbose --log-every 100
+```
+
 
 ## Notebook Skeleton (`notebooks/rf_irt.ipynb`)
 
@@ -231,20 +247,14 @@ marp-cli  # optional for slide rendering
 
 ---
 
-## Next Edit Cycle (fill this in after first run)
+## Next Edit Cycle (post-IRT run)
 
-Completed: repo scaffold established with core directories, `requirements.txt`, data pipeline module, venv bootstrap script, and notebook skeleton.
+Completed this round: CIFAR-10 subset + embeddings cached, Random Forest trained with metrics/importance saved, response matrix generated, and 1PL fit captured with diagnostics & extremes.
 
-Artifacts staged (not executed yet):
+Upcoming priorities:
 
-* `scripts/init_venv.sh` — one-shot venv + requirements installer.
-* `src/data_pipeline.py` — documented CIFAR-10 sampler + PCA embedding CLI with shape summaries.
-* `notebooks/rf_irt.ipynb` — workflow scaffold with reusable configs, execution checklist, and persistence plan.
-* `slides.md` — deck seeded with overview, pipeline, upcoming figures, and story beats.
-
-Next execution-focused steps:
-
-* [ ] Run `scripts/init_venv.sh` then execute subset + embedding CLI to materialize caches (T1).
-* [ ] Capture dataset split sizes, PCA shape summary, and RF metrics in this README after first run (T1/T2).
-* [ ] Activate RF training, response matrix build, and IRT fit blocks in the notebook; persist outputs for analysis (T2–T4).
-* [ ] Replace slide placeholders with confusion matrix, Wright map, and δ vs margin figures; add key takeaways (T5/T6).
+* [ ] Compute per-example RF **margin** and entropy on the test split; persist to `data/rf_margins.npy` (T2/T5).
+* [ ] Correlate IRT difficulty with RF margins/confidence and record Pearson/Spearman stats (`data/correlations.json`) plus scatter plots (T5).
+* [ ] Produce a Wright Map or ranked ridge plot combining ability & difficulty distributions (Matplotlib or Seaborn) for inclusion in the slide deck (T5/T6).
+* [ ] Surface class-level difficulty summaries and merge into `slides.md` + `README.md` narrative (T5/T6).
+* [ ] Migrate the executed workflow into `notebooks/rf_irt.ipynb` for a single-click rerun, and wire slides to the freshly generated figures (T6).
