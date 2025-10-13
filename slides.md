@@ -2,7 +2,6 @@
 
 marp: true
 theme: default
-class: invert
 paginate: true
 math: katex
 style: |
@@ -578,7 +577,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 # Section IV · Cross-Study & Diagnostics
 
 - Compare backbones and datasets on a shared θ/δ scale.
-- Surface recurring themes before the wrap-up and appendix.
+- Surface recurring themes before the close.
 
 ---
 
@@ -611,35 +610,3 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 - Run the queued 2PL/3PL experiments (`reports/discrimination_analysis_plan.md`).
 - Correlate θ with tree structure (depth, leaf count) to guide pruning.
 - Scale the δ + margin triage on CIFAR before moving to tabular studies.
-
----
-
-# Appendix · Extended Diagnostics
-
-- Supplemental slides for Q&A and deep dives.
-- Includes tabular baselines, training curves, and class-level breakdowns.
-- Skip on the first pass; return as questions arise.
-
----
-
-# IRT Fit (Study I Baseline, 1PL 600 epochs)
-
-- Optimizer: Adam lr=0.05, SVI Trace_ELBO, seed=7.
-- Final loss: **1.50M** (down from 165M at init).
-- Tree ability (θ): mean −11.14, σ 0.55, range [−12.79, −9.68].
-- Item difficulty (δ): mean 5.90, σ 4.10, range [−10.74, 14.26].
-- Correlations — ability ↔ tree accuracy **0.999**, difficulty ↔ item error **0.950**.
-- Embedding & MNIST tables confirm these correlations elsewhere in the deck.
-
-Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
-
----
-
-# Edge Cases Across Datasets
-
-- **CIFAR-10 (PCA):** δ tail features grayscale ships and occluded pets with margin < −0.2, entropy > 2.2.
-- **CIFAR-10 (MobileNet):** Outliers shrink but cat/dog overlap keeps δ > 8.
-- **MNIST:** High δ digits stem from stroke noise (e.g., 9 vs 4); entropy > 1.9 only there.
-- Actionable: audit items with δ > 8 plus low margins—they recur across embeddings.
-
----
