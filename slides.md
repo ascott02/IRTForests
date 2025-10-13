@@ -135,62 +135,14 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 ---
 
-# Random Forest Mechanics (Deeper Dive)
-
-<div class="columns">
-  <div class="col">
-
-**Bootstrap Aggregation**
-
-- Sample $n$ examples with replacement per tree; leave-one-out OOB estimates follow.
-- Feature subsampling at each split decorrelates trees and trims variance.
-- Majority vote or probability averaging reduces variance relative to any single tree.
-
-  </div>
-  <div class="col">
-
-**Hyperparameters that Matter**
-
-- $n_{trees}$ controls variance reduction ceiling.
-- Max depth / min samples per leaf shape bias vs variance.
-- Max features governs how diverse each tree becomes.
-- Class weights & sample balancing steer towards rare classes.
-
-  </div>
-</div>
-
----
-
-# CART Splits & Gini Impurity
-
-- Trees grow by selecting the feature/threshold minimizing impurity after the split.
-- **Gini impurity** for node $t$ with class proportions $p_k$:
-
-$$G(t) = 1 - \sum_k p_k^2$$
-
-- Split gain: $\Delta G = G(t) - \sum_{child} \frac{|t_{child}|}{|t|} G(t_{child})$.
-- Alternative is entropy $H(t) = -\sum_k p_k \log p_k$; we track both for diagnostics.
-- Deep nodes with tiny $|t|$ overfit; pruning or depth limits keep signals meaningful.
-
----
-
 # Margins, Entropy, and Ensemble Confidence
 
+- Each tree outputs class votes → aggregate probabilities underpin our diagnostics.
 - **Margin**: $m(x) = P(\hat{y}=y_{true}) - \max_{c \neq y_{true}} P(\hat{y}=c)$.
   - Near 0 → ambiguous votes; negative → systematic misclassification.
 - **Entropy** over class probabilities captures total disagreement across trees.
 - Pairing $m(x)$ and entropy with $\delta$ spots mislabeled or out-of-distribution examples.
 - Track margin trajectories per item to measure progress after curation.
-
----
-
-# Variable Importance Playbook
-
-- **Mean decrease in impurity (MDI)**: sum of Gini drops attributable to each feature.
-- **Permutation importance**: shuffle feature $k$, re-score; larger drops → higher reliance.
-- **SHAP / local attributions**: optional, clarify per-item influence.
-- Cross-study comparison of importance vectors reveals when new embeddings truly shift focus.
-- Coupled with IRT, we can ask whether hard items lack salient features or trees misuse them.
 
 ---
 
