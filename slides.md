@@ -32,6 +32,24 @@ style: |
 
 ---
 
+# Motivation & Guiding Questions
+
+- Why do some trees in a strong ensemble still behave erratically?
+- Which images systematically confuse the forest, and can we surface them automatically?
+- How do richer features shift the balance between tree skill (θ) and item difficulty (δ)?
+- Use IRT to translate random forest signals into actionable curation insights.
+
+---
+
+# Story Arc
+
+1. **Background:** IRT mechanics + RF diagnostics we rely on.
+2. **Pipeline:** Datasets, embeddings, and response matrices powering the studies.
+3. **Case Studies:** Baseline CIFAR, MobileNet upgrade, and MNIST control.
+4. **Synthesis:** Cross-study comparisons, takeaways, and next steps.
+
+---
+
 # Why Item Response Theory for Random Forests?
 
 - Treat each tree as a “test taker” answering every held-out image.
@@ -196,6 +214,14 @@ $$G(t) = 1 - \sum_k p_k^2$$
 
 ---
 
+# Section I · Baseline Study (CIFAR + PCA)
+
+- Establish reference performance with lightweight PCA embeddings.
+- Inspect how IRT parameters align with classic RF uncertainty signals.
+- Identify pain points to motivate stronger features.
+
+---
+
 # Study I: CIFAR-10 + PCA-128 Embeddings
 
 - Baseline vision setup: 64×64 resize + PCA to 128 dims.
@@ -335,6 +361,22 @@ $$G(t) = 1 - \sum_k p_k^2$$
 
 ---
 
+# Study I Takeaways
+
+- Weak PCA features create long tails in both ability (θ) and difficulty (δ), exposing erratic trees.
+- Margin and entropy correlate with δ, but clusters of high-difficulty animals persist across diagnostics.
+- Visual inspection confirms mislabeled or low-signal items driving high δ, motivating feature upgrades.
+
+---
+
+# Section II · Feature-Rich CIFAR (MobileNet)
+
+- Hold data splits constant to isolate backbone improvements.
+- Expect tighter ability spread and stronger δ alignment with RF confidence.
+- Validate whether ambiguous animal classes persist after feature upgrade.
+
+---
+
 # Study II: CIFAR-10 + MobileNet Embeddings
 
 - Swap PCA features for MobileNet-V3 (960-D) while keeping tree count and splits constant.
@@ -435,6 +477,22 @@ $$G(t) = 1 - \sum_k p_k^2$$
 
 ---
 
+# Study II Takeaways
+
+- MobileNet embeddings boost accuracy by 37 pp while collapsing ability variance (σθ 0.55 → 0.25).
+- δ remains correlated with RF uncertainty, concentrating hard cases into a smaller ambiguous cluster.
+- Residual cat/dog confusion suggests future gains must come from data curation, not just features.
+
+---
+
+
+# Section III · Control Study (MNIST)
+
+- Probe pipeline behavior on a high-signal, low-noise dataset.
+- Confirm that IRT still mirrors RF uncertainty when accuracy is near perfect.
+- Use as guardrail before applying to additional tabular or vision datasets.
+
+---
 
 # Study III: MNIST Mini-Study
 
@@ -542,6 +600,22 @@ $$G(t) = 1 - \sum_k p_k^2$$
 
 ---
 
+# Study III Takeaways
+
+- Clean digits yield near-perfect agreement between δ and RF uncertainty metrics.
+- Ability scores stay high yet retain enough variance to flag the rare ambiguous strokes.
+- Control study validates that the RF × IRT pipeline generalizes beyond noisy vision data.
+
+---
+
+# Section IV · Cross-Study & Diagnostics
+
+- Compare backbones and datasets on a shared θ/δ scale.
+- Surface themes that repeat across studies before diving into supporting diagnostics.
+- Set the stage for consolidated takeaways and action items.
+
+---
+
 # Cross-Study Snapshot
 
 | Study | Feature Backbone | Test Acc | δ ↔ margin (Pearson) | δ ↔ entropy (Pearson) | θ σ | δ σ |
@@ -553,6 +627,32 @@ $$G(t) = 1 - \sum_k p_k^2$$
 - Feature backbone drives both accuracy gains and δ alignment strength.
 - θ variance collapses with MobileNet (0.25) indicating tree consistency; MNIST keeps moderate spread despite high accuracy.
 - MNIST δ σ expands to 8.19, highlighting rare but extreme digit ambiguities versus CIFAR’s visual noise.
+
+---
+
+# Key Takeaways
+
+- IRT mirrors random forest uncertainty: θ aligns with per-tree accuracy and δ with item error across every study.
+- Feature backbones reshape the θ/δ landscape—MobileNet curbs tree variance while preserving a hard-item tail.
+- Combining δ with margins and entropy cleanly triages ambiguous animal classes without manual inspection.
+- Control datasets like MNIST confirm the pipeline generalizes beyond noisy vision data before we branch out further.
+
+---
+
+# Next Steps
+
+- Expand notebooks to auto-export the comparison tables and montage panels featured here.
+- Run planned 2PL/3PL experiments (see `reports/discrimination_analysis_plan.md`) to capture discrimination effects.
+- Correlate tree ability with structural traits (depth, leaf count) to prioritize pruning or retraining.
+- Scale the δ + margin triage to curate ambiguous CIFAR items and validate on upcoming tabular studies.
+
+---
+
+# Appendix · Extended Diagnostics
+
+- Supplemental slides for reference during Q&A or deep dives.
+- Includes tabular baselines, training curves, and class-level breakdowns.
+- Safe to skip on first pass; revisit as questions arise.
 
 ---
 
@@ -630,29 +730,3 @@ Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
 
   </div>
 </div>
-
----
-
-# Emerging Insights
-
-- Top 10 trees achieve 19–20% accuracy; lowest performers drop below 15%.
-- Hardest items (δ > 13) align with CIFAR-10 ships/airplanes confusions.
-- Easiest items (δ < −9.5) mostly belong to truck/ship classes with distinctive features.
-- MobileNet run yields θ variance halved and pushes accuracy to 81%, confirming sensitivity to embeddings.
-- MobileNet difficulty plots confirm tighter δ alignment (|corr| ≥ 0.81) and isolate stubborn animal confusions.
-- MNIST pipeline shows how clean data collapses entropy while keeping δ informative for rare ambiguities.
-- Parallel study sections simplify comparisons — identical tables & diagnostics spotlight backbone effects.
-- Loss curve still descending: consider more epochs or lower lr for finer convergence.
-
-Extremes listed in `data/irt_extremes.json` for manual inspection.
-
----
-
-# Next Steps
-
-- Drop confusion matrix + new montages into the storytelling deck.
-- Promote notebook automation to emit the tables used here (embedding, MNIST, tabular).
-- Run planned 2PL/3PL experiments (see `reports/discrimination_analysis_plan.md`) to get discrimination.
-- Compare tree ability with structural traits (depth, leaves) for richer diagnostics.
-- Extend edge-case audit: inspect δ>8 + margin<0 items across embeddings and datasets.
-- Hook the new diagnostics script into the notebook so plots regenerate alongside tables.
