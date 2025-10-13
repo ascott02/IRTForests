@@ -217,6 +217,35 @@ class: invert
 
 ---
 
+## Slide Deck Outline (v2)
+
+1. **Orientation**
+  - Title, motivation, RF & IRT primers, pipeline recap.
+  - Global dataset overview (CIFAR-10 subset + MNIST mini-study) with split tables.
+2. **Study I — CIFAR-10 + PCA-128** (baseline)
+  - Setup slide: dataset slice, embedding recipe, caching paths.
+  - RF performance slide: accuracy table, per-class range, tree/margin stats.
+  - IRT diagnostics slide: θ vs accuracy, δ vs RF signals (margin/entropy), δ vs error.
+  - Evidence slide: Wright map, hardest/easiest montage, key edge cases.
+3. **Study II — CIFAR-10 + MobileNet-V3** (transfer features)
+  - Setup slide mirroring Study I (data reuse, embedding dimensionality, storage).
+  - RF performance slide with identical table schema for easy comparison.
+  - IRT diagnostics slide mirroring Study I (δ vs signals, θ spread, Wright map excerpt if available).
+  - Evidence slide: highlight persistent edge cases, note improvements vs PCA.
+4. **Study III — MNIST Mini-Study**
+  - Setup slide (sampling, preprocessing, embedding/feature choices).
+  - RF performance slide (same metric table schema).
+  - IRT diagnostics slide (δ vs signals, ability spread, confusion snippets if available).
+  - Evidence slide: ambiguous digit gallery, link to artifacts.
+5. **Cross-Study Synthesis**
+  - Edge-case comparison across datasets.
+  - Class-level difficulty vs error overlay.
+  - Training loss, histograms, and actionable next steps.
+
+> Maintain uniform headings and table formats so each study tells the same story: setup → RF metrics → IRT diagnostics → qualitative evidence → takeaways.
+
+---
+
 ## Installation
 
 `requirements.txt` (suggested)

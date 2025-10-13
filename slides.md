@@ -111,6 +111,19 @@ style: |
 
 ---
 
+# Dataset Overview
+
+| Dataset | Train | Val | Test | Feature Pipeline | Notes |
+|---|---|---|---|---|---|
+| CIFAR-10 subset | 10,000 | 2,000 | 2,000 | 64×64 RGB → PCA-128 or MobileNet-V3 (960-D) | Shared splits across Study I & II |
+| MNIST mini | 4,000 | 800 | 800 | 28×28 grayscale → raw pixels (no PCA) | Sanity check for clean handwriting |
+
+- All studies reuse cached artifacts under `data/` for reproducibility.
+- CIFAR runs differ only in embedding backbone (PCA vs MobileNet); labels & splits stay fixed.
+- MNIST mini-study mirrors the workflow to confirm signals transfer to simpler data.
+
+---
+
 # Study I: CIFAR-10 + PCA-128 Embeddings
 
 - Baseline vision setup: 64×64 resize + PCA to 128 dims.
@@ -119,32 +132,16 @@ style: |
 
 ---
 
-# Data & Embeddings Snapshot
+# Study I Setup: CIFAR-10 + PCA-128
 
-- PCA-128 embeddings, mean 0.0 ± 0.06 per feature.
-- `scripts/data_pipeline.py` CLI caches subsets & embeddings.
-- Ready for alternative feature backbones (MobileNet/ResNet) if needed.
-
----
-
-# RF Results (MobileNet-V3)
-
-| Metric | Value |
-|---|---|
-| Test / Val / OOB acc | 0.8090 / 0.8135 / 0.7967 |
-| Per-class range | 0.68 (cat) → 0.915 (ship) |
-| Mean tree accuracy | 0.4817 |
-| Mean margin / entropy | 0.2806 / 1.4663 |
-| δ ↔ margin (Pearson) | −0.8825 |
-| δ ↔ entropy (Pearson) | 0.8113 |
-
-- Pretrained features boost accuracy by 37 pp while maintaining strong δ correlations.
-- Higher margins + lower entropy show the forest is confident except on stubborn animal classes.
-- Artifacts live under `data/mobilenet/` (metrics, response matrix, signals, IRT outputs).
+- CIFAR-10 subset (10k / 2k / 2k) with stratified sampling and fixed seed.
+- Preprocess: resize 64×64, normalize, PCA → 128-D embeddings (`data/cifar10_embeddings.npz`).
+- Response matrix shape 200 × 2000 with mean tree accuracy 0.176.
+- Artifacts: metrics, margins, entropy, and IRT outputs stored under `data/` & `figures/` root.
 
 ---
 
-# RF Results (PCA-128)
+# Study I Performance (PCA-128)
 
 | Metric | Value |
 |---|---|
@@ -155,9 +152,104 @@ style: |
 | δ ↔ margin (Pearson) | −0.8286 |
 | δ ↔ entropy (Pearson) | 0.6782 |
 
-- Baseline ensemble underperforms due to weak PCA features but still shows strong δ alignment.
-- Low mean margin + high entropy indicate broad tree disagreement → ideal for IRT diagnostics.
+- Baseline ensemble underperforms due to weak PCA features yet preserves δ alignment.
+- Low mean margin + high entropy indicate broad tree disagreement → fertile ground for IRT.
 - Artifacts: metrics (`data/rf_metrics.json`), confusion (`data/rf_confusion.npy`), importances, permutations.
+
+---
+
+# Study I Confusion Matrix
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/rf_confusion_matrix.png" style="width:95%; border:1px solid #ccc;" />
+  </div>
+  <div class="col">
+
+**Reading the matrix**
+
+- High off-diagonal mass for cat ↔ dog, bird ↔ airplane, horse ↔ deer.
+- Ships and trucks maintain >80% normalized diagonal despite shared structure.
+- Hotspots align with IRT δ spikes (slides that follow), signalling data curation targets.
+
+  </div>
+</div>
+
+---
+
+# Study I Diagnostics: Ability Profiles
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/ability_vs_accuracy.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%; text-align:center;">Ability (θ) vs tree accuracy — Spearman ≈ 0.99</p>
+  </div>
+  <div class="col">
+    <img src="figures/wright_map.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%; text-align:center;">Wright map: θ cluster near −11; δ stretches to 14</p>
+  </div>
+</div>
+
+- Trees with θ above −10 outperform peers by ~3 pp even with PCA features.
+- Long tail of low-ability trees (< −11.5) drags ensemble accuracy; pruning candidates.
+- Wright map shows limited θ spread versus broad δ tail → feature quality bottleneck.
+
+---
+
+# Study I Diagnostics: δ vs Error Rate
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/difficulty_vs_error.png" style="width:95%; border:1px solid #ccc;" />
+  </div>
+  <div class="col">
+
+- δ > 10 corresponds to averaged tree error >80%, mostly ambiguous animals.
+- Items with δ < 0 are “free points” — nearly every tree agrees.
+- Pearson ≈ 0.95, Spearman ≈ 0.94. Difficulty doubles as an error heat-map.
+
+  </div>
+</div>
+
+---
+
+# Study I Diagnostics: δ vs RF Signals
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%;">PCA run: δ vs margin (Pearson −0.83)</p>
+  </div>
+  <div class="col">
+    <img src="figures/difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%;">PCA run: δ vs entropy (Pearson 0.68)</p>
+  </div>
+</div>
+
+- Hard items cluster bottom-right (low margin, high entropy) → ripe for relabeling or augmentation.
+- Opposite corner contains “easy wins” with positive margin and low entropy.
+- Study II mirrors these plots with MobileNet features, pushing |corr| above 0.80.
+
+---
+
+# Study I Evidence: Hard vs Easy Examples
+
+<div class="columns">
+  <div class="col">
+
+![Hardest items](figures/hardest_items_test.png)
+
+  </div>
+  <div class="col">
+
+![Easiest items](figures/easiest_items_test.png)
+
+  </div>
+</div>
+
+- Hardest items skew toward ambiguous airplane/ship silhouettes and cluttered cat/dog scenes.
+- Notice recurring mislabeled-looking ships (δ ≈ 14) flagged for manual review.
+- Easy set dominated by deterministic cues (red fire trucks, high-contrast ships) → low δ and entropy.
 
 ---
 
@@ -169,7 +261,90 @@ style: |
 
 ---
 
-# MNIST Mini-Study
+# Study II Setup: CIFAR-10 + MobileNet-V3
+
+- Reuse CIFAR-10 subset splits from Study I to isolate feature effects.
+- Extract 960-D embeddings from pretrained MobileNet-V3 Small (`data/cifar10_mobilenet_embeddings.npz`).
+- Response matrix shape 200 × 2000 with mean tree accuracy 0.482.
+- Dedicated artifacts: `data/mobilenet/*`, plots in `figures/mobilenet/`.
+
+---
+
+# Study II Performance (MobileNet-V3)
+
+| Metric | Value |
+|---|---|
+| Test / Val / OOB acc | 0.8090 / 0.8135 / 0.7967 |
+| Per-class range | 0.68 (cat) → 0.915 (ship) |
+| Mean tree accuracy | 0.4817 |
+| Mean margin / entropy | 0.2806 / 1.4663 |
+| δ ↔ margin (Pearson) | −0.8825 |
+| δ ↔ entropy (Pearson) | 0.8113 |
+
+- Pretrained features boost accuracy by 37 pp while strengthening δ correlations.
+- Higher margins + lower entropy show confidence gains except on stubborn animal classes.
+- Artifacts live under `data/mobilenet/` (metrics, response matrix, signals, IRT outputs).
+
+---
+
+# Study II Diagnostics: δ vs RF Signals
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/mobilenet/mobilenet_difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%;">δ vs margin (Pearson −0.88)</p>
+  </div>
+  <div class="col">
+    <img src="figures/mobilenet/mobilenet_difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%;">δ vs entropy (Pearson 0.81)</p>
+  </div>
+</div>
+
+- MobileNet compresses the easy cluster (high margin, low entropy) while isolating true hard cases.
+- Higher correlation magnitudes indicate better alignment between δ and RF uncertainty signals.
+- Cat/dog confusions persist despite stronger features → candidates for targeted curation.
+
+---
+
+# Study II Diagnostics: Ability Profiles
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/mobilenet/wright_map.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%; text-align:center;">Wright map: θ variance shrinks to 0.25</p>
+  </div>
+  <div class="col">
+
+- θ mean −0.21 ± 0.25: trees cluster closer together than PCA baseline (σ 0.55 → 0.25).
+- δ spans −8 to +10; hardest items remain animal lookalikes flagged in Study I.
+- Shared axis shows overlap where confident trees meet easy airplane/ship items.
+- Ability compression signals that feature quality, not tree diversity, now limits performance.
+
+  </div>
+</div>
+
+
+---
+
+
+# Study III: MNIST Mini-Study
+
+- Lightweight handwriting dataset to validate RF × IRT beyond CIFAR-10.
+- Serves as control: simpler classes, higher accuracy, clearer δ separation.
+- Highlights how pipeline behaves when ambiguity is rare but still detectable.
+
+---
+
+# Study III Setup: MNIST Mini-Study
+
+- Split 4k / 800 / 800 digits with stratified sampling and fixed seed.
+- Minimal preprocessing: 28×28 grayscale flattened; no augmentation.
+- Random Forest (200 trees) trained on raw pixels; response matrix shape 200 × 800.
+- Artifacts stored under `data/mnist/` with plots in `figures/mnist/`.
+
+---
+
+# Study III Performance (MNIST)
 
 | Metric | Value |
 |---|---|
@@ -187,22 +362,55 @@ style: |
 
 ---
 
-# Confusion Matrix View
+# Study III Diagnostics: δ vs RF Signals
 
 <div class="columns">
   <div class="col">
-    <img src="figures/rf_confusion_matrix.png" style="width:95%; border:1px solid #ccc;" />
+    <img src="figures/mnist/mnist_difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%;">δ vs margin (Pearson −0.95)</p>
+  </div>
+  <div class="col">
+    <img src="figures/mnist/mnist_difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%;">δ vs entropy (Pearson 0.96)</p>
+  </div>
+</div>
+
+- Clean digits show near-perfect alignment between IRT difficulty and RF uncertainty signals.
+- Low scatter indicates only a handful of items drive ensemble uncertainty.
+- Marks δ > 12 digits for manual audit (stroke collisions, 3 vs 5, 4 vs 9).
+
+---
+
+# Study III Diagnostics: Ability Profiles
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/mnist/wright_map.png" style="width:100%; border:1px solid #ccc;" />
+      <p style="font-size:85%; text-align:center;">Wright map: θ mean 4.23 ± 0.44; δ mean −1.75 ± 8.19</p>
   </div>
   <div class="col">
 
-**Reading the matrix**
-
-- High off-diagonal mass for cat ↔ dog, bird ↔ airplane, horse ↔ deer.
-- Ships and trucks maintain >80% normalized diagonal despite shared structure.
-- Hotspots align with IRT δ spikes (next slides), signalling data curation targets.
+- θ mean 4.23 ± 0.44: trees quickly separate easy digits, reflecting high consensus.
+- δ mean −1.75 ± 8.19 with heavy tails on ambiguous strokes.
+- Shared scale shows abundant overlap → most items are easy wins with a few hard spikes.
+- Provides contrast against CIFAR studies where ability mass sat below zero.
 
   </div>
 </div>
+
+---
+
+# Cross-Study Snapshot
+
+| Study | Feature Backbone | Test Acc | δ ↔ margin (Pearson) | δ ↔ entropy (Pearson) | θ σ | δ σ |
+|---|---|---|---|---|---|---|
+| Study I: CIFAR + PCA-128 | PCA-128 | 0.4305 | −0.8286 | 0.6782 | 0.55 | 4.10 |
+| Study II: CIFAR + MobileNet | MobileNet-V3 (960-D) | 0.8090 | −0.8825 | 0.8113 | 0.25 | 4.67 |
+| Study III: MNIST Mini | Raw pixels | 0.9475 | −0.950 | 0.958 | 0.44 | 8.19 |
+
+- Feature backbone drives both accuracy gains and δ alignment strength.
+- θ variance collapses with MobileNet (0.25) indicating tree consistency; MNIST keeps moderate spread despite high accuracy.
+- MNIST δ σ expands to 8.19, highlighting rare but extreme digit ambiguities versus CIFAR’s visual noise.
 
 ---
 
@@ -222,7 +430,7 @@ style: |
 
 ---
 
-# IRT Fit (1PL, 600 epochs)
+# IRT Fit (Study I Baseline, 1PL 600 epochs)
 
 - Optimizer: Adam lr=0.05, SVI Trace_ELBO, seed=7.
 - Final loss: **1.50M** (down from 165M at init).
@@ -232,121 +440,6 @@ style: |
 - Cross-check: embedding & MNIST tables confirm these correlations persist across datasets.
 
 Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
-
----
-
-# Diagnostics: Ability vs Accuracy
-
-<div class="columns">
-  <div class="col">
-    <img src="figures/ability_vs_accuracy.png" style="width:95%; border:1px solid #ccc;" />
-  </div>
-  <div class="col">
-
-- Trees with θ above −10 outperform peers by ~3 pp, even in this weak PCA setting.
-- Long tail of low-ability trees (< −11.5) drags ensemble accuracy; candidates for pruning.
-- Ability vs accuracy Spearman ≈ 0.99 — validates IRT θ as a crisp proxy for tree reliability.
-
-  </div>
-</div>
-
----
-
-# MobileNet Difficulty vs RF Signals
-
-<div class="columns">
-  <div class="col">
-    <img src="figures/mobilenet/mobilenet_difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%;">δ vs margin (Pearson −0.88)</p>
-  </div>
-  <div class="col">
-    <img src="figures/mobilenet/mobilenet_difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%;">δ vs entropy (Pearson 0.81)</p>
-  </div>
-</div>
-
-- MobileNet compresses the easy cluster (high margin, low entropy) while isolating true hard cases.
-- Higher correlation magnitudes indicate better alignment between δ and RF uncertainty signals.
-- Wright map (next slide) shows θ variance shrinking to 0.25 — trees converge toward similar ability.
-
----
-
-# Diagnostics: Difficulty vs Error Rate
-
-<div class="columns">
-  <div class="col">
-    <img src="figures/difficulty_vs_error.png" style="width:95%; border:1px solid #ccc;" />
-  </div>
-  <div class="col">
-
-- δ > 10 corresponds to averaged tree error >80%, mostly ambiguous animals.
-- Items with δ < 0 are “free points” — nearly every tree agrees.
-- Pearson ≈ 0.95, Spearman ≈ 0.94. Difficulty doubles as an error heat-map.
-
-  </div>
-</div>
-
----
-
-# Difficulty vs RF Signals
-
-<div class="columns">
-  <div class="col">
-
-<img width="90%" src="figures/difficulty_vs_margin.png" style="width:50%; border:1px solid #ccc;" />
-<p style="font-size:85%;">PCA run: δ vs margin (Pearson −0.83)</p>
-
-  </div>
-  <div class="col">
-
-<img width="90%" src="figures/difficulty_vs_entropy.png" style="width:50%; border:1px solid #ccc;" />
-<p style="font-size:85%;">PCA run: δ vs entropy (Pearson 0.68)</p>
-
-  </div>
-</div>
-
-- Hard items cluster bottom-right (low margin, high entropy) → ripe for relabeling or augmentation.
-- Opposite corner contains “easy wins” with positive margin and low entropy.
-- Similar trends strengthen with MobileNet features (margin Pearson −0.88, entropy Pearson 0.81).
-
----
-
-# Wright Map Snapshot
-
-<div class="columns">
-<div class="col">
-
-- Tree abilities cluster tightly (θ ≈ −11), suggesting limited diversity among respondents.
-- Item difficulties span a wide range (δ ∈ [−10.7, 14.3]); tail heavy on very hard items.
-- Shared axis highlights sparse overlap where strong trees meet easy items.
-</div>
-
-<div class="col">
-
-<img src="figures/wright_map.png">
-</div>
-</div>
-
----
-
-# Hardest vs Easiest Test Examples
-
-<div class="columns">
-  <div class="col">
-
-![Hardest items](figures/hardest_items_test.png)
-
-  </div>
-  <div class="col">
-
-![Easiest items](figures/easiest_items_test.png)
-
-  </div>
-</div>
-
-- Hardest items skew toward ambiguous airplane/ship silhouettes and cluttered cat/dog scenes.
-- Notice recurring mislabeled-looking ships (δ ≈ 14) flagged for manual review.
-- Easy set dominated by deterministic cues (red fire trucks, high-contrast ships) → low δ and entropy.
 
 ---
 
@@ -406,6 +499,7 @@ Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
 - MobileNet run yields θ variance halved and pushes accuracy to 81%, confirming sensitivity to embeddings.
 - MobileNet difficulty plots confirm tighter δ alignment (|corr| ≥ 0.81) and isolate stubborn animal confusions.
 - MNIST pipeline shows how clean data collapses entropy while keeping δ informative for rare ambiguities.
+- Parallel study sections simplify comparisons — identical tables & diagnostics spotlight backbone effects.
 - Loss curve still descending: consider more epochs or lower lr for finer convergence.
 
 Extremes listed in `data/irt_extremes.json` for manual inspection.
@@ -419,3 +513,4 @@ Extremes listed in `data/irt_extremes.json` for manual inspection.
 - Run planned 2PL/3PL experiments (see `reports/discrimination_analysis_plan.md`) to get discrimination.
 - Compare tree ability with structural traits (depth, leaves) for richer diagnostics.
 - Extend edge-case audit: inspect δ>8 + margin<0 items across embeddings and datasets.
+- Render ability-vs-accuracy and δ-vs-error plots for MobileNet & MNIST runs to fully mirror Study I artifacts.
