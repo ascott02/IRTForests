@@ -70,8 +70,8 @@ Use this README as a **recursive prompt**. Each commit:
 
 **T0 – Repo Setup**
 
-* [ ] Create folders: `notebooks/`, `src/`, `data/`, `figures/`.
-* [ ] Add `environment.yml` or `requirements.txt`.
+* [x] Create folders: `notebooks/`, `src/`, `data/`, `figures/`.
+* [x] Add `environment.yml` or `requirements.txt`.
 
 **T1 – Data & Embeddings**
 
@@ -233,7 +233,9 @@ marp-cli  # optional for slide rendering
 
 ## Next Edit Cycle (fill this in after first run)
 
-* [ ] Paste initial metrics here
-* [ ] Decide on A vs B embeddings
-* [ ] Adjust n_estimators / depth
-* [ ] Add first Wright Map figure
+Completed: repo scaffold established with core directories and `requirements.txt` committed.
+
+* [ ] Download CIFAR-10 subset via `torchvision` (T1)
+* [ ] Generate and cache 128-dim embeddings (select PCA pipeline, T1)
+* [ ] Log dataset split sizes and embedding shapes in this README
+* [ ] Draft notebook skeleton cells for data loading and embedding export
