@@ -126,6 +126,9 @@ Use this README as a **recursive prompt**. Each commit:
 - **Cross-model correlations:** PCA δ↔margin Pearson **−0.83**, δ↔entropy **0.68** vs. MobileNet δ↔margin **−0.88**, δ↔entropy **0.81** (`data/rf_irt_correlations.json`, `data/mobilenet/rf_irt_correlations.json`).
 - **Qualitative inspection:** CIFAR-10 hardest/easiest montages (PCA) plus new MobileNet Wright map for improved alignment between ability and accuracy.
 - **Reports:** `reports/embedding_comparison.md` captures a side-by-side metric table; notebook exports still provide class summaries and run metadata (`reports/class_difficulty_summary.md`, `reports/rf_irt_summary.json`).
+- **Discrimination roadmap:** See `reports/discrimination_analysis_plan.md` for the 2PL/ability-depth follow-up design.
+- **MNIST variant:** `scripts/build_mnist_embeddings.py` + `scripts/train_random_forest.py` yield a compact MNIST run (test acc 94.8%) with artifacts under `data/mnist/`; summary logged in `reports/mnist_summary.md`.
+- **Tabular reference:** `scripts/run_rf_tabular_example.py` catalogs classic datasets (e.g., breast cancer) with summaries written to `reports/rf_*_summary.json` (overview in `reports/rf_examples.md`).
 
 Run the IRT stage end-to-end:
 
@@ -267,4 +270,4 @@ Upcoming priorities:
 * [ ] Extend notebook to bake in report-ready tables/plots (Markdown export or HTML snippet generation).
 * [ ] Experiment with alternative embedding backbones (e.g., MobileNet) to stress-test δ distributions.
 * [ ] Compare per-tree ability against structural metrics (depth, leaf count) for richer RF diagnostics.
-* [ ] Explore 2PL fit and evaluate discrimination parameters vs RF confidence.
+* [ ] Explore 2PL fit and evaluate discrimination parameters vs RF confidence (plan drafted in `reports/discrimination_analysis_plan.md`).

@@ -27,6 +27,60 @@ style: |
 
 ---
 
+# Item Response Theory Primer
+
+<div class="columns">
+  <div class="col">
+
+**Key Terms**
+
+- Ability (θ): latent skill of a respondent (tree).
+- Difficulty (δ): latent hardness of an item (image).
+- Discrimination (a): slope/steepness capturing how sharply success changes near δ.
+- Guessing (c): lower asymptote (3PL); optional for multi-choice exams.
+
+  </div>
+  <div class="col">
+
+**Models**
+
+- 1PL/Rasch: P(correct) = sigmoid(theta − delta); single slope for every item.
+- 2PL: P = sigmoid(a * (theta − delta)) — each item learns its own discrimination "a".
+- 3PL: adds a guessing floor c: P = c + (1 − c) * sigmoid(a * (theta − delta)).
+- Outputs give interpretable maps of strong trees, ambiguous items, and high-informative regions.
+
+  </div>
+</div>
+
+---
+
+# Random Forest Refresher
+
+<div class="columns">
+  <div class="col">
+
+**Ensemble Mechanics**
+
+- Bagging of decision trees (bootstrap + feature subsampling).
+- Each tree votes; majority (or probability average) yields prediction.
+- Strength from low-bias trees + reduced variance via averaging.
+- Key levers: number of trees, max depth, feature subsampling, leaf size.
+
+  </div>
+  <div class="col">
+
+**Signals We Track**
+
+- Per-tree accuracy → ability (θ) comparison with IRT.
+- Margins = p(true) − max p(other) highlight high/low confidence.
+- Entropy over class probabilities measures tree disagreement.
+- Feature importances & permutation scores remain our global view.
+
+  </div>
+</div>
+
+---
+
 # Pipeline Recap
 
 <div class="columns">

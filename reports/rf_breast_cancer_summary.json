@@ -1,0 +1,121 @@
+{
+  "dataset": "breast_cancer",
+  "n_samples": 569,
+  "n_features": 30,
+  "feature_names": [
+    "mean radius",
+    "mean texture",
+    "mean perimeter",
+    "mean area",
+    "mean smoothness",
+    "mean compactness",
+    "mean concavity",
+    "mean concave points",
+    "mean symmetry",
+    "mean fractal dimension",
+    "radius error",
+    "texture error",
+    "perimeter error",
+    "area error",
+    "smoothness error",
+    "compactness error",
+    "concavity error",
+    "concave points error",
+    "symmetry error",
+    "fractal dimension error",
+    "worst radius",
+    "worst texture",
+    "worst perimeter",
+    "worst area",
+    "worst smoothness",
+    "worst compactness",
+    "worst concavity",
+    "worst concave points",
+    "worst symmetry",
+    "worst fractal dimension"
+  ],
+  "metrics": {
+    "accuracy": 0.9707602339181286,
+    "oob_accuracy": 0.964824120603015,
+    "classification_report": {
+      "0": {
+        "precision": 0.9538461538461539,
+        "recall": 0.96875,
+        "f1-score": 0.9612403100775194,
+        "support": 64.0
+      },
+      "1": {
+        "precision": 0.9811320754716981,
+        "recall": 0.9719626168224299,
+        "f1-score": 0.9765258215962441,
+        "support": 107.0
+      },
+      "accuracy": 0.9707602339181286,
+      "macro avg": {
+        "precision": 0.967489114658926,
+        "recall": 0.970356308411215,
+        "f1-score": 0.9688830658368818,
+        "support": 171.0
+      },
+      "weighted avg": {
+        "precision": 0.9709198007112605,
+        "recall": 0.9707602339181286,
+        "f1-score": 0.9708049283962537,
+        "support": 171.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        62,
+        2
+      ],
+      [
+        3,
+        104
+      ]
+    ],
+    "roc_auc": 0.9969334112149533
+  },
+  "top_features": [
+    [
+      "worst concave points",
+      0.12596906343598105
+    ],
+    [
+      "worst perimeter",
+      0.11795268491349084
+    ],
+    [
+      "worst radius",
+      0.11725961440778009
+    ],
+    [
+      "mean concave points",
+      0.09585253320579427
+    ],
+    [
+      "worst area",
+      0.09378485944907192
+    ],
+    [
+      "worst concavity",
+      0.05920283336758303
+    ],
+    [
+      "mean perimeter",
+      0.055850205759248386
+    ],
+    [
+      "mean concavity",
+      0.04864666763652858
+    ],
+    [
+      "area error",
+      0.03890011639614697
+    ],
+    [
+      "mean radius",
+      0.03823529553342218
+    ]
+  ]
+}
