@@ -452,6 +452,26 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 ---
 
+# Study II Evidence: Hard vs Easy Examples
+
+<div class="columns">
+  <div class="col">
+
+![MobileNet hardest items](figures/mobilenet/hardest_items_test.png)
+
+  </div>
+  <div class="col">
+
+![MobileNet easiest items](figures/mobilenet/easiest_items_test.png)
+
+  </div>
+</div>
+
+- MobileNet tightens easy clusters yet the same cat/dog outliers survive with δ > 8.
+- Easy wins sharpen into high-contrast ships and trucks, showing how feature upgrades cleanly separate low-δ items.
+
+---
+
 # Study II Takeaways
 
 - MobileNet embeddings add 37 pp of accuracy while collapsing ability variance (σθ 0.55 → 0.25).
@@ -565,6 +585,26 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
   </div>
 </div>
+
+---
+
+# Study III Evidence: Hard vs Easy Digits
+
+<div class="columns">
+  <div class="col">
+
+![MNIST hardest digits](figures/mnist/hardest_digits_test.png)
+
+  </div>
+  <div class="col">
+
+![MNIST easiest digits](figures/mnist/easiest_digits_test.png)
+
+  </div>
+</div>
+
+- Hardest digits show stroke collisions (3↔5, 4↔9) that push δ above 12 despite high margins elsewhere.
+- Easy digits are crisp, centered strokes—useful anchors when explaining why δ plunges on most of the dataset.
 
 ---
 
