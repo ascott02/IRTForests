@@ -292,12 +292,16 @@ Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
 
 <div class="columns">
   <div class="col">
-    <img src="figures/difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%;">PCA run: δ vs margin (Pearson −0.83)</p>
+
+<img width="90%" src="figures/difficulty_vs_margin.png" style="width:50%; border:1px solid #ccc;" />
+<p style="font-size:85%;">PCA run: δ vs margin (Pearson −0.83)</p>
+
   </div>
   <div class="col">
-    <img src="figures/difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%;">PCA run: δ vs entropy (Pearson 0.68)</p>
+
+<img width="90%" src="figures/difficulty_vs_entropy.png" style="width:50%; border:1px solid #ccc;" />
+<p style="font-size:85%;">PCA run: δ vs entropy (Pearson 0.68)</p>
+
   </div>
 </div>
 
@@ -309,11 +313,19 @@ Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
 
 # Wright Map Snapshot
 
-![Wright map](figures/wright_map.png)
+<div class="columns">
+<div class="col">
 
 - Tree abilities cluster tightly (θ ≈ −11), suggesting limited diversity among respondents.
 - Item difficulties span a wide range (δ ∈ [−10.7, 14.3]); tail heavy on very hard items.
 - Shared axis highlights sparse overlap where strong trees meet easy items.
+</div>
+
+<div class="col">
+
+<img src="figures/wright_map.png">
+</div>
+</div>
 
 ---
 
@@ -350,11 +362,18 @@ Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
 
 # Class Difficulty vs RF Error
 
-![Class summary](figures/class_difficulty_vs_error.png)
+<div class="columns">
+  <div class="col">
 
 - Cats, horses, dogs exhibit δ ≈ 7–8 with RF error ≥ 0.60, marking priority classes for curation.
 - Ships and airplanes remain easiest: δ ≈ 4 with RF error ≤ 0.46.
 - Aligning δ with RF error spotlights where ensemble uncertainty mirrors misclassification hotspots.
+  </div>
+
+  <div class="col">
+![Class summary](figures/class_difficulty_vs_error.png)
+  </div>
+</div>
 
 ---
 
@@ -369,6 +388,8 @@ Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
   <div class="col">
 
 <img src="figures/ability_hist.png" style="width:95%; border:1px solid #ccc;" />
+</div>
+  <div class="col">
 
 <img src="figures/difficulty_hist.png" style="width:95%; border:1px solid #ccc; margin-top:0.75em;" />
 
