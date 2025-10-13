@@ -7,7 +7,7 @@ paginate: true
 math: katex
 style: |
   section {
-    font-size: 160%;
+    font-size: 150%;
   }
   pre {
     vertical-align: text-top;
@@ -21,7 +21,7 @@ style: |
   .col {
     flex: 1;
   }
-footer: ATS VLM Lab UTA Fall 2025
+footer: Andrew T. Scott &copy; 2025, UTA VLM Lab, Fall 2025
 ---
 
 # IRTForests
@@ -114,6 +114,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 - Single global slope ensures parameters live on a shared logit scale.
 - $(\theta - \delta) = 0$ ⇒ 50% chance of success; shifts left/right flip odds.
 - Fisher information peaks where curves are steepest → ideal for spotting uncertain regions.
+- <a href="https://ascott02.github.io/irt.html">IRT ICC Visualizer</a>
 
   </div>
   <div class="col" style="text-align:center;">
@@ -193,7 +194,7 @@ $$G(t) = 1 - \sum_k p_k^2$$
 
 ---
 
-# Pipeline Recap
+# Pipeline Overview
 
 <div class="columns">
   <div class="col">
@@ -201,8 +202,9 @@ $$G(t) = 1 - \sum_k p_k^2$$
 **Data Prep (done)**
 
 - Stratified CIFAR-10 subset: 10k train / 2k val / 2k test.
-- Resize 64×64, normalize, PCA → 128-D embeddings.
-- Cached artifacts in `data/cifar10_subset.npz` + `data/cifar10_embeddings.npz`.
+- Resize 64×64, normalize, PCA → 128-D embeddings (plus MobileNet-V3 cache).
+- MNIST mini: 4k / 800 / 800 digits, normalized 28×28 grayscale, flattened to vectors.
+- Cached artifacts in `data/cifar10_subset.npz`, `data/cifar10_embeddings.npz`, and `data/mnist/mnist_split.npz`.
 
   </div>
 
@@ -210,9 +212,9 @@ $$G(t) = 1 - \sum_k p_k^2$$
 
 **Modeling Status**
 
-- RF (200 trees) trained; metrics + importances saved.
-- Response matrix `(200 × 2000)` persisted for IRT.
-- 1PL Rasch fit (SVI, 600 epochs) complete.
+- RF (200 trees) trained for each study; metrics + importances saved.
+- Response matrices persisted: CIFAR `(200 × 2000)` for PCA & MobileNet, MNIST `(200 × 800)`.
+- 1PL Rasch fit (SVI, 600 epochs) complete for CIFAR; MNIST run mirrors the pipeline with shared notebooks.
 
   </div>
 </div>
@@ -269,6 +271,8 @@ $$G(t) = 1 - \sum_k p_k^2$$
 
 # Study I Performance (PCA-128)
 
+<small>
+
 | Metric | Value |
 |---|---|
 | Test / Val / OOB acc | 0.4305 / 0.4145 / 0.3730 |
@@ -277,6 +281,8 @@ $$G(t) = 1 - \sum_k p_k^2$$
 | Mean margin / entropy | −0.0028 / 2.1503 |
 | δ ↔ margin (Pearson) | −0.8286 |
 | δ ↔ entropy (Pearson) | 0.6782 |
+
+</small>
 
 - Baseline ensemble underperforms due to weak PCA features yet preserves δ alignment.
 - Low mean margin + high entropy indicate broad tree disagreement → fertile ground for IRT.
@@ -307,12 +313,16 @@ $$G(t) = 1 - \sum_k p_k^2$$
 
 <div class="columns">
   <div class="col">
-    <img src="figures/ability_vs_accuracy.png" style="width:100%; border:1px solid #ccc;" />
+  <center>
+    <img width="85%" src="figures/ability_vs_accuracy.png" style="width:100%; border:1px solid #ccc;" />
     <p style="font-size:85%; text-align:center;">Ability (θ) vs tree accuracy — Spearman ≈ 0.99</p>
+    </center>
   </div>
   <div class="col">
-    <img width="97%" src="figures/wright_map.png" style="width:95%; border:1px solid #ccc;" />
+  <center>
+    <img width="84%" src="figures/wright_map.png" style="width:95%; border:1px solid #ccc;" />
     <p style="font-size:85%; text-align:center;">Wright map: θ cluster near −11; δ stretches to 14</p>
+    </center>
   </div>
 </div>
 
@@ -343,12 +353,16 @@ $$G(t) = 1 - \sum_k p_k^2$$
 
 <div class="columns">
   <div class="col">
+  <center>
     <img src="figures/difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
     <p style="font-size:85%;">PCA run: δ vs margin (Pearson −0.83)</p>
+    </center>
   </div>
   <div class="col">
+  <center>
     <img src="figures/difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
     <p style="font-size:85%;">PCA run: δ vs entropy (Pearson 0.68)</p>
+    </center>
   </div>
 </div>
 
@@ -443,12 +457,16 @@ $$G(t) = 1 - \sum_k p_k^2$$
 
 <div class="columns">
   <div class="col">
+  <center>
     <img src="figures/mobilenet/mobilenet_difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
     <p style="font-size:85%;">δ vs margin (Pearson −0.88)</p>
+  </center>
   </div>
   <div class="col">
+  <center>
     <img src="figures/mobilenet/mobilenet_difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
     <p style="font-size:85%;">δ vs entropy (Pearson 0.81)</p>
+  </center>
   </div>
 </div>
 
@@ -462,12 +480,16 @@ $$G(t) = 1 - \sum_k p_k^2$$
 
 <div class="columns">
   <div class="col">
-    <img src="figures/mobilenet/ability_vs_accuracy.png" style="width:100%; border:1px solid #ccc;" />
+  <center>
+    <img width="85%" src="figures/mobilenet/ability_vs_accuracy.png" style="width:100%; border:1px solid #ccc;" />
     <p style="font-size:85%; text-align:center;">Ability (θ) vs tree accuracy — Pearson 0.983</p>
+  </center>
   </div>
   <div class="col">
-    <img width="97%" src="figures/mobilenet/wright_map.png" style="width:100%; border:1px solid #ccc;" />
+  <center>
+    <img width="84%%" src="figures/mobilenet/wright_map.png" style="width:100%; border:1px solid #ccc;" />
     <p style="font-size:85%; text-align:center;">Wright map: θ variance shrinks to 0.25</p>
+  </center>
   </div>
 </div>
 
