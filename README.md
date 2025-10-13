@@ -118,6 +118,7 @@ Use this README as a **recursive prompt**. Each commit:
 
 - **Data prep:** Stratified CIFAR-10 subset (train 10k / val 2k / test 2k). PCA embeddings cached in `data/cifar10_embeddings.npz` with 128 features per example.
 - **Random Forest:** Overall test accuracy **0.4305**, validation **0.4145**, OOB **0.3730**. Per-class stats logged in `data/rf_metrics.json`; confusion matrix serialized to `data/rf_confusion.npy`.
+- **Confusion matrix:** Normalized heatmap at `figures/rf_confusion_matrix.png` highlights cat/dog, bird/airplane, horse/deer confusions.
 - **Response matrix:** `data/response_matrix.npz` stores a `(200, 2000)` binary matrix (trees × items) with mean accuracy **0.1759** per tree (see `data/response_summary.json`).
 - **IRT fit:** `scripts/fit_irt.py` (SVI, 600 epochs, lr=0.05) yields tree ability mean **−11.14 ± 0.55** and item difficulty mean **5.90 ± 4.10**. Correlations: ability ↔ tree accuracy **0.999**, difficulty ↔ item error **0.950** (`data/irt_summary.json`).
 - **Diagnostics:** Parameter histograms (`figures/ability_hist.png`, `figures/difficulty_hist.png`), ability vs. accuracy scatter (`figures/ability_vs_accuracy.png`), difficulty vs. error scatter (`figures/difficulty_vs_error.png`), SVI loss curve (`figures/irt_training_loss.png`). Extremes captured in `data/irt_extremes.json`.
@@ -126,6 +127,7 @@ Use this README as a **recursive prompt**. Each commit:
 - **Wright map:** Combined θ/δ histogram overlay stored at `figures/wright_map.png` for slide inclusion.
 - **Qualitative inspection:** Hardest vs easiest CIFAR-10 examples exported via `figures/hardest_items_test.png` and `figures/easiest_items_test.png` for storytelling.
 - **Class-level summary:** `data/class_difficulty_summary.json` + `figures/class_difficulty_vs_error.png` reveal that cats, horses, dogs drive δ spikes aligned with high RF error.
+- **Report exports:** Notebook cell writes `reports/class_difficulty_summary.md` and `reports/rf_irt_summary.json` for slide-ready tables and correlation stats.
 
 Run the IRT stage end-to-end:
 
@@ -137,6 +139,7 @@ python scripts/analyze_rf_irt_correlations.py
 python scripts/plot_wright_map.py
 python scripts/visualize_difficulty_extremes.py --split test --count 10
 python scripts/class_difficulty_summary.py
+python scripts/plot_confusion_matrix.py --normalize
 ```
 
 
@@ -257,13 +260,12 @@ marp-cli  # optional for slide rendering
 
 ---
 
-## Next Edit Cycle (post qualitative + class analysis)
+## Next Edit Cycle (post confusion matrix integration)
 
-Completed this round: qualitative extremes rendered, class summaries plotted, and notebook automation wired to helper scripts.
+Completed this round: qualitative extremes rendered, class summaries plotted, notebook analytics scripted, and confusion matrix visuals integrated.
 
 Upcoming priorities:
 
-* [ ] Integrate confusion matrix + hardest/easiest montages directly into `slides.md` narrative.
 * [ ] Extend notebook to bake in report-ready tables/plots (Markdown export or HTML snippet generation).
 * [ ] Experiment with alternative embedding backbones (e.g., MobileNet) to stress-test δ distributions.
 * [ ] Compare per-tree ability against structural metrics (depth, leaf count) for richer RF diagnostics.

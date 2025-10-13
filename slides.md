@@ -88,6 +88,16 @@ style: |
 
 ---
 
+# Confusion Matrix View
+
+![Normalized confusion matrix](figures/rf_confusion_matrix.png)
+
+- Notable confusions: cat ↔ dog, bird ↔ airplane, horse ↔ deer.
+- Strong separability for ship/truck classes despite noise in others.
+- Guides which classes to prioritize for feature or data augmentation.
+
+---
+
 # IRT Fit (1PL, 600 epochs)
 
 - Optimizer: Adam lr=0.05, SVI Trace_ELBO, seed=7.
