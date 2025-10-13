@@ -139,6 +139,14 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 ---
 
+# Margins & Entropy — Why They Matter
+
+- Aggregated tree votes turn into class probabilities, giving us raw material for uncertainty scoring.
+- The margin gap shows whether the forest is decisive (large positive) or split/incorrect (near or below zero).
+- Entropy summarizes how scattered those votes are; mixing it with $\delta$ spotlights mislabeled or out-of-distribution items and lets us watch them shrink after curation.
+
+---
+
 # Pipeline Overview
 
 <div class="columns">
