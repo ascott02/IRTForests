@@ -146,6 +146,36 @@ High-difficulty items correlate strongly with tree error (ρ ≈ 0.95).
 
 ---
 
+# Hardest vs Easiest Test Examples
+
+<div class="columns">
+  <div class="col">
+
+![Hardest items](figures/hardest_items_test.png)
+
+  </div>
+  <div class="col">
+
+![Easiest items](figures/easiest_items_test.png)
+
+  </div>
+</div>
+
+- Hardest items skew toward ambiguous airplane/ship silhouettes and cluttered animal scenes.
+- Easiest items show high-saturation trucks/ships with distinctive backgrounds aiding tree votes.
+
+---
+
+# Class Difficulty vs RF Error
+
+![Class summary](figures/class_difficulty_vs_error.png)
+
+- Cats, horses, dogs exhibit δ ≈ 7–8 with RF error ≥ 0.60, marking priority classes for curation.
+- Ships and airplanes remain easiest: δ ≈ 4 with RF error ≤ 0.46.
+- Aligning δ with RF error spotlights where ensemble uncertainty mirrors misclassification hotspots.
+
+---
+
 # Training Loss & Distributions
 
 <div class="columns">
@@ -178,8 +208,8 @@ Extremes listed in `data/irt_extremes.json` for manual inspection.
 
 # Next Steps
 
-- Surface top-10 hardest/easiest CIFAR-10 examples with visual inspection.
-- Add class-level aggregates (δ vs RF error) and confusion matrix visuals.
-- Fold scripts into `notebooks/rf_irt.ipynb` for reproducible reruns.
+- Drop confusion matrix + new montages into the storytelling deck.
+- Enhance notebook to emit report-ready tables and scripted plots.
 - Explore alternate embeddings (e.g., MobileNet) to test θ/δ stability.
-- Prepare qualitative insights slide pairing images with margin/δ extremes.
+- Compare tree ability with structural traits (depth, leaves) for richer diagnostics.
+- Experiment with 2PL to relate discrimination to RF confidence dynamics.

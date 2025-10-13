@@ -100,8 +100,8 @@ Use this README as a **recursive prompt**. Each commit:
 
 * [x] Plot **Wright Map**: tree abilities vs item difficulties on shared axis (`figures/wright_map.png`).
 * [x] Correlate item difficulty (\delta) with RF **margin** and **entropy**; report Pearson/Spearman (`scripts/analyze_rf_irt_correlations.py` → `data/rf_irt_correlations.json`, scatter plots in `figures/`).
-* [ ] Identify top‑10 **hard items** (high (\delta)); visualize and inspect.
-* [ ] Class‑wise view: average (\delta) per class vs RF error per class.
+* [x] Identify top‑10 **hard items** (high (\delta)); visualize and inspect (`scripts/visualize_difficulty_extremes.py` → `figures/hardest_items_test.png`, `figures/easiest_items_test.png`).
+* [x] Class‑wise view: average (\delta) per class vs RF error per class (`scripts/class_difficulty_summary.py` → `data/class_difficulty_summary.json`, `figures/class_difficulty_vs_error.png`).
 
 **T6 – Slides**
 
@@ -124,6 +124,8 @@ Use this README as a **recursive prompt**. Each commit:
 - **RF signals:** Margins average **−0.0028 ± 0.10**, entropy average **2.15 ± 0.13** (`data/rf_signal_summary.json`).
 - **Cross-model correlations:** δ vs margin Pearson **−0.83**, δ vs entropy Pearson **0.68** with similar Spearman trends (`data/rf_irt_correlations.json`; plots `figures/difficulty_vs_margin.png`, `figures/difficulty_vs_entropy.png`).
 - **Wright map:** Combined θ/δ histogram overlay stored at `figures/wright_map.png` for slide inclusion.
+- **Qualitative inspection:** Hardest vs easiest CIFAR-10 examples exported via `figures/hardest_items_test.png` and `figures/easiest_items_test.png` for storytelling.
+- **Class-level summary:** `data/class_difficulty_summary.json` + `figures/class_difficulty_vs_error.png` reveal that cats, horses, dogs drive δ spikes aligned with high RF error.
 
 Run the IRT stage end-to-end:
 
@@ -133,6 +135,8 @@ python scripts/fit_irt.py --epochs 600 --learning-rate 0.05 --verbose --log-ever
 python scripts/compute_rf_signals.py
 python scripts/analyze_rf_irt_correlations.py
 python scripts/plot_wright_map.py
+python scripts/visualize_difficulty_extremes.py --split test --count 10
+python scripts/class_difficulty_summary.py
 ```
 
 
@@ -253,14 +257,14 @@ marp-cli  # optional for slide rendering
 
 ---
 
-## Next Edit Cycle (after RF signal analysis)
+## Next Edit Cycle (post qualitative + class analysis)
 
-Completed this round: RF margins/entropy derived, δ correlations quantified, and Wright map generated for storytelling.
+Completed this round: qualitative extremes rendered, class summaries plotted, and notebook automation wired to helper scripts.
 
 Upcoming priorities:
 
-* [ ] Visualize top-10 hardest/easiest items (thumbnails) and integrate qualitative insights (T5).
-* [ ] Extend correlations to include RF confidence/entropy vs. per-class error summaries (T5).
-* [ ] Embed new analyses into `notebooks/rf_irt.ipynb` for a reproducible single-run experience (T6).
-* [ ] Update `slides.md` with confusion matrix, correlation tables, and item examples once assets are ready (T6).
-* [ ] Explore alternative embeddings or RF configurations to test robustness of θ/δ patterns (T7).
+* [ ] Integrate confusion matrix + hardest/easiest montages directly into `slides.md` narrative.
+* [ ] Extend notebook to bake in report-ready tables/plots (Markdown export or HTML snippet generation).
+* [ ] Experiment with alternative embedding backbones (e.g., MobileNet) to stress-test δ distributions.
+* [ ] Compare per-tree ability against structural metrics (depth, leaf count) for richer RF diagnostics.
+* [ ] Explore 2PL fit and evaluate discrimination parameters vs RF confidence.
