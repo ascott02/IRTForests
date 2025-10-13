@@ -239,12 +239,12 @@ Artifacts staged (not executed yet):
 
 * `scripts/init_venv.sh` — one-shot venv + requirements installer.
 * `src/data_pipeline.py` — documented CIFAR-10 sampler + PCA embedding CLI with shape summaries.
-* `notebooks/rf_irt.ipynb` — workflow scaffold with reusable configs/TODOs.
-* `slides.md` — initial deck outlining goals, pipeline, and pre-execution roadmap.
+* `notebooks/rf_irt.ipynb` — workflow scaffold with reusable configs, execution checklist, and persistence plan.
+* `slides.md` — deck seeded with overview, pipeline, upcoming figures, and story beats.
 
 Next execution-focused steps:
 
 * [ ] Run `scripts/init_venv.sh` then execute subset + embedding CLI to materialize caches (T1).
-* [ ] Capture dataset split sizes and PCA shape summary in this README after first run.
-* [ ] Flesh out RF fitting, response matrix, and IRT sections with executable code & diagnostics.
-* [ ] Materialize plots/metrics, then replace outline bullets in `slides.md` with visuals/examples.
+* [ ] Capture dataset split sizes, PCA shape summary, and RF metrics in this README after first run (T1/T2).
+* [ ] Activate RF training, response matrix build, and IRT fit blocks in the notebook; persist outputs for analysis (T2–T4).
+* [ ] Replace slide placeholders with confusion matrix, Wright map, and δ vs margin figures; add key takeaways (T5/T6).

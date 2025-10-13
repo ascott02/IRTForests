@@ -59,3 +59,38 @@ style: |
 - Flesh out RF training + diagnostics in notebook.
 - Implement IRT fit & Wright map visual.
 - Push key metrics/plots back into these slides.
+
+---
+
+# Metrics & Visuals Inbound
+
+<div class="columns">
+  <div class="col">
+
+**Planned Figures**
+
+- RF accuracy table + confusion matrix heatmap.
+- Wright map overlaying θ (trees) vs δ (items).
+- Correlation scatter: δ vs RF margin.
+
+  </div>
+
+  <div class="col">
+
+**Data Drops**
+
+- `rf_metrics.json` (acc, OOB, per-class stats).
+- `response_matrix.npz` (trees × items correctness).
+- `irt_parameters.npz` (θ, δ, discrimination).
+
+  </div>
+</div>
+
+---
+
+# Story Beats to Capture
+
+- Which CIFAR-10 classes drive hardest items?
+- Do high-ability trees share structural traits?
+- How do RF margins align with IRT δ outliers?
+- Next experiments: vary n_estimators, explore 2PL.
