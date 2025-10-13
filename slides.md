@@ -134,10 +134,20 @@ style: |
 
 # Study I Setup: CIFAR-10 + PCA-128
 
-- CIFAR-10 subset (10k / 2k / 2k) with stratified sampling and fixed seed.
-- Preprocess: resize 64×64, normalize, PCA → 128-D embeddings (`data/cifar10_embeddings.npz`).
-- Response matrix shape 200 × 2000 with mean tree accuracy 0.176.
-- Artifacts: metrics, margins, entropy, and IRT outputs stored under `data/` & `figures/` root.
+<div class="columns">
+  <div class="col">
+    <ul>
+      <li>CIFAR-10 subset (10k / 2k / 2k) with stratified sampling and fixed seed.</li>
+      <li>Preprocess: resize 64×64, normalize, PCA → 128-D embeddings (`data/cifar10_embeddings.npz`).</li>
+      <li>Response matrix shape 200 × 2000 with mean tree accuracy 0.176.</li>
+      <li>Artifacts: metrics, margins, entropy, and IRT outputs stored under `data/` & `figures/` root.</li>
+    </ul>
+  </div>
+  <div class="col">
+    <img src="figures/datasets/study1_cifar_samples.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%; text-align:center;">Study I sample grid — stratified CIFAR-10 slices</p>
+  </div>
+</div>
 
 ---
 
@@ -263,10 +273,20 @@ style: |
 
 # Study II Setup: CIFAR-10 + MobileNet-V3
 
-- Reuse CIFAR-10 subset splits from Study I to isolate feature effects.
-- Extract 960-D embeddings from pretrained MobileNet-V3 Small (`data/cifar10_mobilenet_embeddings.npz`).
-- Response matrix shape 200 × 2000 with mean tree accuracy 0.482.
-- Dedicated artifacts: `data/mobilenet/*`, plots in `figures/mobilenet/`.
+<div class="columns">
+  <div class="col">
+    <ul>
+      <li>Reuse CIFAR-10 subset splits from Study I to isolate feature effects.</li>
+      <li>Extract 960-D embeddings from pretrained MobileNet-V3 Small (`data/cifar10_mobilenet_embeddings.npz`).</li>
+      <li>Response matrix shape 200 × 2000 with mean tree accuracy 0.482.</li>
+      <li>Dedicated artifacts: `data/mobilenet/*`, plots in `figures/mobilenet/`.</li>
+    </ul>
+  </div>
+  <div class="col">
+    <img src="figures/datasets/study2_cifar_samples.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%; text-align:center;">Study II sample grid — same splits, MobileNet embeddings</p>
+  </div>
+</div>
 
 ---
 
@@ -354,10 +374,20 @@ style: |
 
 # Study III Setup: MNIST Mini-Study
 
-- Split 4k / 800 / 800 digits with stratified sampling and fixed seed.
-- Minimal preprocessing: 28×28 grayscale flattened; no augmentation.
-- Random Forest (200 trees) trained on raw pixels; response matrix shape 200 × 800.
-- Artifacts stored under `data/mnist/` with plots in `figures/mnist/`.
+<div class="columns">
+  <div class="col">
+    <ul>
+      <li>Split 4k / 800 / 800 digits with stratified sampling and fixed seed.</li>
+      <li>Minimal preprocessing: 28×28 grayscale flattened; no augmentation.</li>
+      <li>Random Forest (200 trees) trained on raw pixels; response matrix shape 200 × 800.</li>
+      <li>Artifacts stored under `data/mnist/` with plots in `figures/mnist/`.</li>
+    </ul>
+  </div>
+  <div class="col">
+    <img src="figures/datasets/mnist_samples.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%; text-align:center;">Study III sample grid — curated MNIST mini split</p>
+  </div>
+</div>
 
 ---
 
