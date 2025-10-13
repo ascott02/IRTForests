@@ -43,19 +43,17 @@ footer: Andrew T. Scott &copy; 2025, UTA VLM Lab, Fall 2025
 
 # GenAI In the Loop Scientific Exploration
 
-- Started from a concise README spec describing goals, datasets, and desired diagnostics.
-- Iterated with notebook + CLI automation to run every experiment end-to-end.
-- Generated figures, tables, and reports that surfaced ability/difficulty patterns.
-- Translated the workflow into this deck, tightening narrative and visuals each pass.
+- Started from a focused README spec outlining goals, datasets, and diagnostics.
+- Automated notebook + CLI runs to regenerate every experiment end-to-end.
+- Promoted the resulting figures and tables into this deck, sharpening the story each loop.
 
 ---
 
 # Motivation & Guiding Questions
 
-- Random forests glue together many weak classifiers; from an IRT lens each tree is a respondent with latent ability ($\theta$).
-- Held-out images act as items whose difficulty ($\delta$) we can infer by watching which trees succeed or fail.
-- What can θ and δ tell us about dataset quality, backbone choice, and where ambiguity still lives?
-- Can these signals guide future studies—pruning weak trees, curating hard items, and iterating faster with gen-AI tooling?
+- Random forests bundle weak learners; IRT recasts each tree as a respondent with latent ability ($\theta$).
+- Held-out images become items whose difficulty ($\delta$) emerges from tree wins and losses.
+- How do θ and δ steer backbone choices, surface label issues, and focus the next curation loop?
 
 ---
 
@@ -70,10 +68,9 @@ footer: Andrew T. Scott &copy; 2025, UTA VLM Lab, Fall 2025
 
 # Why Item Response Theory for Random Forests?
 
-- Treat each tree as a “test taker” answering every held-out image.
-- Latent **ability** ($\theta$) separates reliable trees from drifted or shallow ones.
-- Latent **difficulty** ($\delta$) surfaces mislabeled or ambiguous images without manual review.
-- Shared scale lets us compare studies, backbones, and curation strategies apples-to-apples.
+- Trees answer the same held-out images, so treat them as “test takers.”
+- Latent **ability** ($\theta$) ranks trees; latent **difficulty** ($\delta$) flags ambiguous images.
+- Shared scales let us compare studies, backbones, and curation tactics directly.
 
 ---
 
@@ -84,20 +81,20 @@ footer: Andrew T. Scott &copy; 2025, UTA VLM Lab, Fall 2025
 
 **Core Terms**
 
-- Ability ($\theta$): respondent skill; higher → better odds of a correct answer.
+- Ability ($\theta$): respondent skill; higher → higher success odds.
 - Difficulty ($\delta$): item hardness; higher → harder even for strong respondents.
-- Discrimination ($a$): slope of the logistic curve near $\delta$.
-- Guessing ($c$): lower bound for multiple-choice exams (rare in our setup).
+- Discrimination ($a$): slope near $\delta$.
+- Guessing ($c$): floor for multiple-choice exams (rare here).
 
   </div>
   <div class="col">
 
 **Ensemble Analogy**
 
-- Respondents → decision trees evaluated on a common test set.
-- Items → images; responses are binary (tree got it right?).
-- Response matrix $R_{ij} \in \{0,1\}$ fuels variational IRT fitting.
-- Outputs: distributions over $\theta_i$ and $\delta_j$ plus information curves.
+- Respondents → decision trees on a shared test set.
+- Items → images; responses are binary (tree correct?).
+- Response matrix $R_{ij} \in \{0,1\}$ feeds variational IRT.
+- Outputs: posteriors over $\theta_i$, $\delta_j$, and information curves.
 
   </div>
 </div>
@@ -111,9 +108,9 @@ footer: Andrew T. Scott &copy; 2025, UTA VLM Lab, Fall 2025
 
 $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j)}}$$
 
-- Single global slope ensures parameters live on a shared logit scale.
-- $(\theta - \delta) = 0$ ⇒ 50% chance of success; shifts left/right flip odds.
-- Fisher information peaks where curves are steepest → ideal for spotting uncertain regions.
+- Single global slope keeps parameters on a shared logit scale.
+- $(\theta - \delta) = 0$ ⇒ 50% success; shifts left/right change odds.
+- Fisher information peaks where curves are steepest—prime for spotting uncertainty.
 - <a href="https://ascott02.github.io/irt.html">IRT ICC Visualizer</a>
 
   </div>
@@ -127,22 +124,19 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # What We Extract from IRT
 
-- **Ability histograms**: flag inconsistent or low-skill trees worth pruning.
-- **Difficulty ladders**: highlight ambiguous or mislabeled items for relabeling.
-- **Wright maps**: overlay $\theta$ and $\delta$ to see coverage gaps.
-- **Information curves**: identify where ensemble confidence is fragile.
-- These diagnostics complement RF metrics by focusing on *who* struggles and *why*.
+- **Ability histograms** flag low-skill trees worth pruning.
+- **Difficulty ladders** highlight mislabeled or ambiguous items.
+- **Wright maps** overlay $\theta$ and $\delta$ to expose coverage gaps.
+- **Information curves** reveal where ensemble confidence is fragile.
+- Together they explain *who* struggles and *why* beyond RF metrics.
 
 ---
 
 # Margins, Entropy, and Ensemble Confidence
 
-- Each tree outputs class votes → aggregate probabilities underpin our diagnostics.
-- **Margin**: $m(x) = P(\hat{y}=y_{true}) - \max_{c \neq y_{true}} P(\hat{y}=c)$.
-  - Near 0 → ambiguous votes; negative → systematic misclassification.
-- **Entropy** over class probabilities captures total disagreement across trees.
-- Pairing $m(x)$ and entropy with $\delta$ spots mislabeled or out-of-distribution examples.
-- Track margin trajectories per item to measure progress after curation.
+- Tree votes yield class probabilities we mine for uncertainty signals.
+- **Margin** $m(x) = P(\hat{y}=y_{true}) - \max_{c \neq y_{true}} P(\hat{y}=c)$ near 0 marks ambiguity; negative marks systematic flips.
+- **Entropy** captures ensemble disagreement; combining both with $\delta$ surfaces mislabeled or OOD items and tracks curation gains.
 
 ---
 
@@ -153,10 +147,10 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 **Data Prep (done)**
 
-- Stratified CIFAR-10 subset: 10k train / 2k val / 2k test.
+- Stratified CIFAR-10 subset: 10k / 2k / 2k splits.
 - Resize 64×64, normalize, PCA → 128-D embeddings (plus MobileNet-V3 cache).
-- MNIST mini: 4k / 800 / 800 digits, normalized 28×28 grayscale, flattened to vectors.
-- Cached artifacts in `data/cifar10_subset.npz`, `data/cifar10_embeddings.npz`, and `data/mnist/mnist_split.npz`.
+- MNIST mini: 4k / 800 / 800 digits, normalized 28×28 grayscale.
+- Artifacts cached in `data/cifar10_subset.npz`, `data/cifar10_embeddings.npz`, and `data/mnist/mnist_split.npz`.
 
   </div>
 
@@ -164,9 +158,9 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 **Modeling Status**
 
-- RF (200 trees) trained for each study; metrics + importances saved.
+- RF (200 trees) trained for every study; metrics and importances saved.
 - Response matrices persisted: CIFAR `(200 × 2000)` for PCA & MobileNet, MNIST `(200 × 800)`.
-- 1PL Rasch fit (SVI, 600 epochs) complete for CIFAR; MNIST run mirrors the pipeline with shared notebooks.
+- 1PL Rasch (SVI, 600 epochs) complete for CIFAR; MNIST mirrors the same notebook.
 
   </div>
 </div>
@@ -177,28 +171,27 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 | Dataset | Train | Val | Test | Feature Pipeline | Notes |
 |---|---|---|---|---|---|
-| CIFAR-10 subset | 10,000 | 2,000 | 2,000 | 64×64 RGB → PCA-128 or MobileNet-V3 (960-D) | Shared splits across Study I & II |
-| MNIST mini | 4,000 | 800 | 800 | 28×28 grayscale → raw pixels (no PCA) | Sanity check for clean handwriting |
+| CIFAR-10 subset | 10,000 | 2,000 | 2,000 | 64×64 RGB → PCA-128 / MobileNet-V3 (960-D) | Shared splits across Study I & II |
+| MNIST mini | 4,000 | 800 | 800 | 28×28 grayscale → raw pixels (no PCA) | Control for clean handwriting |
 
-- All studies reuse cached artifacts under `data/` for reproducibility.
-- CIFAR runs differ only in embedding backbone (PCA vs MobileNet); labels & splits stay fixed.
-- MNIST mini-study mirrors the workflow to confirm signals transfer to simpler data.
+- All studies reuse cached artifacts under `data/`.
+- CIFAR runs differ only by embeddings; labels and splits stay fixed.
+- MNIST mirrors the workflow to confirm signals on cleaner data.
 
 ---
 
 # Section I · Baseline Study (CIFAR + PCA)
 
-- Establish reference performance with lightweight PCA embeddings.
-- Inspect how IRT parameters align with classic RF uncertainty signals.
-- Identify pain points to motivate stronger features.
+- Establish the PCA baseline and its uncertainty signals.
+- Use IRT to pinpoint weak trees and hard items that motivate stronger features.
 
 ---
 
 # Study I: CIFAR-10 + PCA-128 Embeddings
 
 - Baseline vision setup: 64×64 resize + PCA to 128 dims.
-- 200-tree Random Forest trained on embeddings; response matrix size 200 × 2000.
-- Use this run to introduce IRT diagnostics and identify weak spots.
+- 200-tree Random Forest with a 200 × 2000 response matrix anchors the diagnostics.
+- Use this run to surface weak trees and mislabeled items.
 
 ---
 
@@ -207,10 +200,10 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 <div class="columns">
   <div class="col">
     <ul>
-      <li>CIFAR-10 subset (10k / 2k / 2k) with stratified sampling and fixed seed.</li>
-      <li>Preprocess: resize 64×64, normalize, PCA → 128-D embeddings (`data/cifar10_embeddings.npz`).</li>
-      <li>Response matrix shape 200 × 2000 with mean tree accuracy 0.176.</li>
-      <li>Artifacts: metrics, margins, entropy, and IRT outputs stored under `data/` & `figures/` root.</li>
+  <li>Fixed stratified CIFAR-10 split (10k / 2k / 2k).</li>
+  <li>Resize 64×64, normalize, PCA → 128-D embeddings (`data/cifar10_embeddings.npz`).</li>
+  <li>Response matrix 200 × 2000 with mean tree accuracy 0.176.</li>
+  <li>Artifacts: metrics, margins, entropy, IRT outputs under `data/` and `figures/`.</li>
     </ul>
   </div>
   <div class="col">
@@ -237,7 +230,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 </small>
 
 - Baseline ensemble underperforms due to weak PCA features yet preserves δ alignment.
-- Low mean margin + high entropy indicate broad tree disagreement → fertile ground for IRT.
+- Margins sit near zero and entropy stays high, signalling broad disagreement—prime for IRT.
 - Artifacts: metrics (`data/rf_metrics.json`), confusion (`data/rf_confusion.npy`), importances, permutations.
 
 ---
@@ -252,9 +245,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 **Reading the matrix**
 
-- High off-diagonal mass for cat ↔ dog, bird ↔ airplane, horse ↔ deer.
-- Ships and trucks maintain >80% normalized diagonal despite shared structure.
-- Hotspots align with IRT δ spikes (slides that follow), signalling data curation targets.
+- Off-diagonal spikes (cat↔dog, bird↔airplane, horse↔deer) mirror high-δ items.
+- Ships/trucks stay >80% on-diagonal; the highlighted hotspots mark curation targets.
 
   </div>
 </div>
@@ -278,9 +270,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
 </div>
 
-- Trees with θ above −10 outperform peers by ~3 pp even with PCA features.
-- Long tail of low-ability trees (< −11.5) drags ensemble accuracy; pruning candidates.
-- Wright map shows limited θ spread versus broad δ tail → feature quality bottleneck.
+- Trees with θ above −10 beat peers by ~3 pp even with PCA features.
+- Long-tail θ < −11.5 drags accuracy, and the Wright map shows δ stretching far beyond the compressed ability range.
 
 ---
 
@@ -292,9 +283,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
   <div class="col">
 
-- δ > 10 corresponds to averaged tree error >80%, mostly ambiguous animals.
-- Items with δ < 0 are “free points” — nearly every tree agrees.
-- Pearson ≈ 0.95, Spearman ≈ 0.94. Difficulty doubles as an error heat-map.
+- δ > 10 maps to >80% tree error—mostly ambiguous animals—while δ < 0 becomes “free points.”
+- Pearson ≈ 0.95, Spearman ≈ 0.94: difficulty doubles as an error heat-map.
 
   </div>
 </div>
@@ -318,9 +308,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
 </div>
 
-- Hard items cluster bottom-right (low margin, high entropy) → ripe for relabeling or augmentation.
-- Opposite corner contains “easy wins” with positive margin and low entropy.
-- Study II mirrors these plots with MobileNet features, pushing |corr| above 0.80.
+- Hard items cluster bottom-right (low margin, high entropy); opposite corner houses easy wins.
+- Study II mirrors the trend with even stronger correlations.
 
 ---
 
@@ -340,8 +329,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 </div>
 
 - Hardest items skew toward ambiguous airplane/ship silhouettes and cluttered cat/dog scenes.
-- Notice recurring mislabeled-looking ships (δ ≈ 14) flagged for manual review.
-- Easy set dominated by deterministic cues (red fire trucks, high-contrast ships) → low δ and entropy.
+- Easy set is dominated by high-contrast cues (e.g., red fire trucks), yielding low δ and entropy.
 
 ---
 
@@ -355,17 +343,15 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # Section II · Feature-Rich CIFAR (MobileNet)
 
-- Hold data splits constant to isolate backbone improvements.
-- Expect tighter ability spread and stronger δ alignment with RF confidence.
-- Validate whether ambiguous animal classes persist after feature upgrade.
+- Hold the splits fixed to isolate feature gains.
+- Test whether richer embeddings tighten θ spread and retain δ alignment.
 
 ---
 
 # Study II: CIFAR-10 + MobileNet Embeddings
 
 - Swap PCA features for MobileNet-V3 (960-D) while keeping tree count and splits constant.
-- Measure how richer features alter RF metrics, margins/entropy, and IRT parameter spreads.
-- Use as a reality check before expanding to new datasets.
+- Compare RF metrics, uncertainty signals, and IRT parameters against the baseline.
 
 ---
 
@@ -374,10 +360,10 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 <div class="columns">
   <div class="col">
     <ul>
-      <li>Reuse CIFAR-10 subset splits from Study I to isolate feature effects.</li>
-      <li>Extract 960-D embeddings from pretrained MobileNet-V3 Small (`data/cifar10_mobilenet_embeddings.npz`).</li>
-      <li>Response matrix shape 200 × 2000 with mean tree accuracy 0.482.</li>
-      <li>Dedicated artifacts: `data/mobilenet/*`, plots in `figures/mobilenet/`.</li>
+  <li>Reuse Study I splits to isolate feature effects.</li>
+  <li>Extract 960-D MobileNet-V3 Small embeddings (`data/cifar10_mobilenet_embeddings.npz`).</li>
+  <li>Response matrix 200 × 2000 with mean tree accuracy 0.482.</li>
+  <li>Artifacts live under `data/mobilenet/*` and `figures/mobilenet/`.</li>
     </ul>
   </div>
   <div class="col">
@@ -400,8 +386,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 | δ ↔ entropy (Pearson) | 0.8113 |
 
 - Pretrained features boost accuracy by 37 pp while strengthening δ correlations.
-- Higher margins + lower entropy show confidence gains except on stubborn animal classes.
-- Artifacts live under `data/mobilenet/` (metrics, response matrix, signals, IRT outputs).
+- Higher margins and lower entropy show confidence gains except on stubborn animal classes.
+- Artifacts: metrics, response matrix, signals, and IRT outputs under `data/mobilenet/`.
 
 ---
 
@@ -423,8 +409,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 </div>
 
 - MobileNet compresses the easy cluster (high margin, low entropy) while isolating true hard cases.
-- Higher correlation magnitudes indicate better alignment between δ and RF uncertainty signals.
-- Cat/dog confusions persist despite stronger features → candidates for targeted curation.
+- Larger |corr| values show tighter agreement between δ and RF uncertainty.
+- Cat/dog confusions persist, marking curation targets.
 
 ---
 
@@ -445,10 +431,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
 </div>
 
-- θ mean −0.21 ± 0.25: trees cluster closer together than PCA baseline (σ 0.55 → 0.25).
-- Ability remains tightly coupled to per-tree accuracy; even weakest trees clear 40%.
-- Shared axis shows overlap where confident trees meet easy airplane/ship items.
-- Ability compression signals that feature quality, not tree diversity, now limits performance.
+- θ mean −0.21 ± 0.25: trees cluster far tighter than the PCA baseline (σ 0.55 → 0.25).
+- Ability remains tied to per-tree accuracy, so feature quality—rather than tree diversity—now caps gains.
 
 ---
 
@@ -460,9 +444,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
   <div class="col">
 
-- Pearson 0.922: δ remains strongly aligned with mean tree error despite higher accuracy ceiling.
-- Hardest items (δ > 8) persist from PCA run — mostly cat/dog overlaps and ambiguous aircraft.
-- Easy zone (δ < −3) expands, showing MobileNet features unlock more “free points.”
+- Pearson 0.922 keeps δ aligned with mean tree error even at the higher accuracy ceiling.
+- Hardest items (δ > 8) persist—mostly cat/dog overlaps and ambiguous aircraft—while the easy zone (δ < −3) expands.
 
   </div>
 </div>
@@ -471,26 +454,24 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # Study II Takeaways
 
-- MobileNet embeddings boost accuracy by 37 pp while collapsing ability variance (σθ 0.55 → 0.25).
-- δ remains correlated with RF uncertainty, concentrating hard cases into a smaller ambiguous cluster.
-- Residual cat/dog confusion suggests future gains must come from data curation, not just features.
+- MobileNet embeddings add 37 pp of accuracy while collapsing ability variance (σθ 0.55 → 0.25).
+- δ stays aligned with RF uncertainty, isolating a smaller yet stubborn ambiguous cluster.
+- Residual cat/dog confusion points to data curation as the next lever.
 
 ---
 
 
 # Section III · Control Study (MNIST)
 
-- Probe pipeline behavior on a high-signal, low-noise dataset.
+- Probe the pipeline on a high-signal, low-noise dataset.
 - Confirm that IRT still mirrors RF uncertainty when accuracy is near perfect.
-- Use as guardrail before applying to additional tabular or vision datasets.
 
 ---
 
 # Study III: MNIST Mini-Study
 
 - Lightweight handwriting dataset to validate RF × IRT beyond CIFAR-10.
-- Serves as control: simpler classes, higher accuracy, clearer δ separation.
-- Highlights how pipeline behaves when ambiguity is rare but still detectable.
+- Acts as a control where ambiguity is rare yet still detectable.
 
 ---
 
@@ -499,10 +480,10 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 <div class="columns">
   <div class="col">
     <ul>
-      <li>Split 4k / 800 / 800 digits with stratified sampling and fixed seed.</li>
-      <li>Minimal preprocessing: 28×28 grayscale flattened; no augmentation.</li>
-      <li>Random Forest (200 trees) trained on raw pixels; response matrix shape 200 × 800.</li>
-      <li>Artifacts stored under `data/mnist/` with plots in `figures/mnist/`.</li>
+  <li>Split 4k / 800 / 800 digits with stratified sampling and a fixed seed.</li>
+  <li>Flatten 28×28 grayscale digits; no augmentation.</li>
+  <li>Train a 200-tree RF on raw pixels; response matrix 200 × 800.</li>
+  <li>Artifacts land in `data/mnist/` with plots in `figures/mnist/`.</li>
     </ul>
   </div>
   <div class="col">
@@ -525,9 +506,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 | θ mean ± σ | 4.23 ± 0.44 |
 | δ mean ± σ | −1.75 ± 8.19 |
 
-- Ambiguous digits (e.g., brushed 5 vs 6) spike δ toward ±20; trees vote confidently elsewhere.
-- Reinforces link between low entropy, high margin, and low δ on clean handwriting data.
-- Provides a “sanity benchmark” to validate the RF × IRT pipeline outside CIFAR.
+- Ambiguous digits (e.g., brushed 5 vs 6) spike δ toward ±20; elsewhere the forest is decisive.
+- Low entropy + high margin line up with low δ, giving a “sanity benchmark” beyond CIFAR.
 
 ---
 
@@ -544,9 +524,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
 </div>
 
-- Clean digits show near-perfect alignment between IRT difficulty and RF uncertainty signals.
-- Low scatter indicates only a handful of items drive ensemble uncertainty.
-- Marks δ > 12 digits for manual audit (stroke collisions, 3 vs 5, 4 vs 9).
+- Clean digits show near-perfect alignment between δ and RF uncertainty.
+- Only a handful of δ > 12 digits drive the residual uncertainty (stroke collisions like 3/5, 4/9).
 
 ---
 
@@ -567,10 +546,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
 </div>
 
-- θ mean 4.23 ± 0.44: trees quickly separate easy digits, reflecting high consensus.
-- δ mean −1.75 ± 8.19 with heavy tails on ambiguous strokes.
-- Shared scale shows abundant overlap → most items are easy wins with a few hard spikes.
-- Provides contrast against CIFAR studies where ability mass sat below zero.
+- θ mean 4.23 ± 0.44 shows strong consensus, while δ mean −1.75 ± 8.19 keeps heavy tails for ambiguous strokes.
+- Shared scales expose plentiful easy wins with a few sharp spikes—opposite of the CIFAR baseline.
 
 
 ---
@@ -583,9 +560,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
   <div class="col">
 
-- Pearson 0.962: δ spikes pinpoint the rare ambiguous digits despite overall high accuracy.
-- Outliers (δ > 12) correspond to stroke-collided 3/5/8 and 4/9 pairs flagged for curation.
-- Long negative tail shows the majority of digits are trivial for the ensemble.
+- Pearson 0.962 keeps δ tied to mean tree error despite the high accuracy ceiling.
+- δ > 12 corresponds to stroke-collided 3/5/8 and 4/9 pairs; the long negative tail is trivial for the ensemble.
 
   </div>
 </div>
@@ -594,17 +570,15 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # Study III Takeaways
 
-- Clean digits yield near-perfect agreement between δ and RF uncertainty metrics.
-- Ability scores stay high yet retain enough variance to flag the rare ambiguous strokes.
-- Control study validates that the RF × IRT pipeline generalizes beyond noisy vision data.
+- δ and RF uncertainty agree almost perfectly, while θ stays high yet still flags the rare ambiguous strokes.
+- The control study confirms the RF × IRT pipeline holds outside noisy vision data.
 
 ---
 
 # Section IV · Cross-Study & Diagnostics
 
 - Compare backbones and datasets on a shared θ/δ scale.
-- Surface themes that repeat across studies before diving into supporting diagnostics.
-- Set the stage for consolidated takeaways and action items.
+- Surface recurring themes before the wrap-up and appendix.
 
 ---
 
@@ -617,34 +591,34 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 | Study III: MNIST Mini | Raw pixels | 0.9475 | −0.950 | 0.958 | 0.44 | 8.19 |
 
 - Feature backbone drives both accuracy gains and δ alignment strength.
-- θ variance collapses with MobileNet (0.25) indicating tree consistency; MNIST keeps moderate spread despite high accuracy.
+- θ variance collapses with MobileNet (0.25) while MNIST keeps moderate spread despite high accuracy.
 - MNIST δ σ expands to 8.19, highlighting rare but extreme digit ambiguities versus CIFAR’s visual noise.
 
 ---
 
 # Key Takeaways
 
-- IRT mirrors random forest uncertainty: θ aligns with per-tree accuracy and δ with item error across every study.
-- Feature backbones reshape the θ/δ landscape—MobileNet curbs tree variance while preserving a hard-item tail.
-- Combining δ with margins and entropy cleanly triages ambiguous animal classes without manual inspection.
-- Control datasets like MNIST confirm the pipeline generalizes beyond noisy vision data before we branch out further.
+- IRT mirrors RF uncertainty: θ tracks per-tree accuracy and δ tracks item error across studies.
+- Feature backbones reshape the θ/δ landscape—MobileNet curbs variance yet preserves a hard-item tail.
+- Pairing δ with margins and entropy cleanly triages ambiguous classes without manual inspection.
+- MNIST confirms the pipeline before we branch to new domains.
 
 ---
 
 # Next Steps
 
-- Expand notebooks to auto-export the comparison tables and montage panels featured here.
-- Run planned 2PL/3PL experiments (see `reports/discrimination_analysis_plan.md`) to capture discrimination effects.
-- Correlate tree ability with structural traits (depth, leaf count) to prioritize pruning or retraining.
-- Scale the δ + margin triage to curate ambiguous CIFAR items and validate on upcoming tabular studies.
+- Extend notebooks to auto-export the comparison tables and montages.
+- Run the queued 2PL/3PL experiments (`reports/discrimination_analysis_plan.md`).
+- Correlate θ with tree structure (depth, leaf count) to guide pruning.
+- Scale the δ + margin triage on CIFAR before moving to tabular studies.
 
 ---
 
 # Appendix · Extended Diagnostics
 
-- Supplemental slides for reference during Q&A or deep dives.
+- Supplemental slides for Q&A and deep dives.
 - Includes tabular baselines, training curves, and class-level breakdowns.
-- Safe to skip on first pass; revisit as questions arise.
+- Skip on the first pass; return as questions arise.
 
 ---
 
@@ -655,7 +629,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 - Tree ability (θ): mean −11.14, σ 0.55, range [−12.79, −9.68].
 - Item difficulty (δ): mean 5.90, σ 4.10, range [−10.74, 14.26].
 - Correlations — ability ↔ tree accuracy **0.999**, difficulty ↔ item error **0.950**.
-- Cross-check: embedding & MNIST tables confirm these correlations persist across datasets.
+- Embedding & MNIST tables confirm these correlations elsewhere in the deck.
 
 Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
 
@@ -663,10 +637,10 @@ Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
 
 # Edge Cases Across Datasets
 
-- **CIFAR-10 (PCA):** δ tail contains grayscale ships + occluded pets. Margin < −0.2, entropy > 2.2.
-- **CIFAR-10 (MobileNet):** Outliers shrink but persist for cat/dog overlap; δ still > 8 despite cleaner features.
-- **MNIST:** High δ digits stem from stroke noise (e.g., 9 vs 4). Entropy jumps above 1.9 only for these cases.
-- Actionable: focus audits on items with δ > 8 + low margins; they recur across embeddings.
+- **CIFAR-10 (PCA):** δ tail features grayscale ships and occluded pets with margin < −0.2, entropy > 2.2.
+- **CIFAR-10 (MobileNet):** Outliers shrink but cat/dog overlap keeps δ > 8.
+- **MNIST:** High δ digits stem from stroke noise (e.g., 9 vs 4); entropy > 1.9 only there.
+- Actionable: audit items with δ > 8 plus low margins—they recur across embeddings.
 
 ---
 
