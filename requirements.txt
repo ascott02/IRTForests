@@ -6,4 +6,3 @@ seaborn
 torch
 torchvision
 py-irt
-marp-cli

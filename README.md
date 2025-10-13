@@ -233,9 +233,17 @@ marp-cli  # optional for slide rendering
 
 ## Next Edit Cycle (fill this in after first run)
 
-Completed: repo scaffold established with core directories and `requirements.txt` committed.
+Completed: repo scaffold established with core directories, `requirements.txt`, data pipeline module, venv bootstrap script, and notebook skeleton.
 
-* [ ] Download CIFAR-10 subset via `torchvision` (T1)
-* [ ] Generate and cache 128-dim embeddings (select PCA pipeline, T1)
-* [ ] Log dataset split sizes and embedding shapes in this README
-* [ ] Draft notebook skeleton cells for data loading and embedding export
+Artifacts staged (not executed yet):
+
+* `scripts/init_venv.sh` — one-shot venv + requirements installer.
+* `src/data_pipeline.py` — CIFAR-10 stratified sampler and PCA embedding CLI.
+* `notebooks/rf_irt.ipynb` — full workflow outline with TODO hooks.
+
+Next execution-focused steps:
+
+* [ ] Run `scripts/init_venv.sh` then execute subset + embedding CLI to materialize caches (T1).
+* [ ] Capture dataset split sizes and PCA shape summary in this README after first run.
+* [ ] Flesh out RF fitting, response matrix, and IRT sections in the notebook.
+* [ ] Start seeding `slides.md` with data/embedding visuals once outputs exist.
