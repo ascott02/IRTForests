@@ -6,3 +6,6 @@ seaborn
 torch
 torchvision
 py-irt
+ipykernel
+nbconvert
+tabulate
