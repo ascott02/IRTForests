@@ -3,6 +3,7 @@
 marp: true
 theme: default
 paginate: true
+class: invert
 math: katex
 style: |
   section {
