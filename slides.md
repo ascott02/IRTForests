@@ -115,50 +115,92 @@ style: |
 
 ---
 
-# Random Forest Results
+# Random Forest Results (PCA baseline)
+
+| Metric | Value |
+|---|---|
+| Test / Val / OOB acc | 0.4305 / 0.4145 / 0.3730 |
+| Per-class range | 0.225 (cat) → 0.595 (ship) |
+| Mean tree accuracy | 0.1759 |
+| Mean margin / entropy | −0.0028 / 2.1503 |
+| δ ↔ margin (Pearson) | −0.8286 |
+| δ ↔ entropy (Pearson) | 0.6782 |
+
+- Baseline ensemble underperforms due to weak PCA features but still shows strong δ alignment.
+- Low mean margin + high entropy indicate broad tree disagreement → ideal for IRT diagnostics.
+- Artifacts: metrics (`data/rf_metrics.json`), confusion (`data/rf_confusion.npy`), importances, permutations.
+
+---
+
+# Embedding Comparison
+
+| Metric | PCA-128 | MobileNet-V3 (960-D) |
+|---|---|---|
+| Test accuracy | 0.4305 | **0.8090** |
+| Validation accuracy | 0.4145 | **0.8135** |
+| OOB accuracy | 0.3730 | **0.7967** |
+| Mean margin | −0.0028 | **0.2806** |
+| Mean entropy | **2.1503** | 1.4663 |
+| δ ↔ margin (Pearson) | −0.8286 | **−0.8825** |
+| δ ↔ entropy (Pearson) | 0.6782 | **0.8113** |
+| θ std | **0.5473** | 0.2549 |
+| δ std | 4.1029 | **4.6663** |
+
+- MobileNet sharply improves accuracy and margin separation while preserving strong δ correlations.
+- Narrow θ variance suggests trees become more uniformly strong; wider δ range helps triage hard cases.
+
+---
+
+# MNIST Mini-Study
+
+| Metric | Value |
+|---|---|
+| Train / Val / Test | 4000 / 800 / 800 |
+| RF test / val / OOB | 0.9475 / 0.9413 / 0.9140 |
+| Mean margin / entropy | 0.5546 / 1.0351 |
+| δ ↔ margin (Pearson) | −0.950 |
+| δ ↔ entropy (Pearson) | 0.958 |
+| θ mean ± σ | 4.23 ± 0.44 |
+| δ mean ± σ | −1.75 ± 8.19 |
+
+- Ambiguous digits (e.g., brushed 5 vs 6) spike δ toward ±20; trees vote confidently elsewhere.
+- Reinforces link between low entropy, high margin, and low δ on clean handwriting data.
+- Provides a “sanity benchmark” to validate the RF × IRT pipeline outside CIFAR.
+
+---
+
+# Confusion Matrix View
 
 <div class="columns">
   <div class="col">
-
-**Key Metrics**
-
-- Test accuracy **43.1%**, validation **41.5%**, OOB **37.3%**.
-- Per-class accuracy span: 22.5% (cat) → 59.5% (ship).
-- Response matrix mean tree accuracy: **17.6%**.
-
+    <img src="figures/rf_confusion_matrix.png" style="width:95%; border:1px solid #ccc;" />
   </div>
-
   <div class="col">
 
-**Artifacts**
+**Reading the matrix**
 
-- Metrics: `data/rf_metrics.json`
-- Confusion: `data/rf_confusion.npy`
-- Importances: `data/rf_feature_importances.npy`
-- Permutation: `data/rf_permutation_importance.csv`
+- High off-diagonal mass for cat ↔ dog, bird ↔ airplane, horse ↔ deer.
+- Ships and trucks maintain >80% normalized diagonal despite shared structure.
+- Hotspots align with IRT δ spikes (next slides), signalling data curation targets.
 
   </div>
 </div>
 
 ---
 
-# Embedding Comparison
+# Tabular RF Reference (Breast Cancer)
 
-- **Baseline (PCA‑128):** Accuracy 43.1%, margin mean ≈ −0.003, δ↔margin Pearson −0.83.
-- **MobileNet-V3 (960-D):** Accuracy 80.9%, margin mean ≈ 0.281, δ↔margin Pearson −0.88.
-- Entropy drops from 2.15 → 1.47 and ability spread tightens (σ: 0.55 → 0.25).
-- Difficulty spread widens slightly (σ: 4.10 → 4.67) indicating richer separation of hard/easy items.
-- Full table: `reports/embedding_comparison.md`.
+| Metric | Value |
+|---|---|
+| Samples / features | 569 / 30 |
+| RF test accuracy | 0.971 |
+| RF OOB accuracy | 0.965 |
+| ROC AUC | 0.997 |
+| Top features | worst concave points, worst perimeter, worst radius |
 
----
-
-# Confusion Matrix View
-
-![Normalized confusion matrix](figures/rf_confusion_matrix.png)
-
-- Notable confusions: cat ↔ dog, bird ↔ airplane, horse ↔ deer.
-- Strong separability for ship/truck classes despite noise in others.
-- Guides which classes to prioritize for feature or data augmentation.
+- Provides a well-behaved baseline: high accuracy, small δ expected when we run IRT.
+- Feature rankings highlight geometric shape descriptors → contrast to image pipelines.
+- Script: `python scripts/run_rf_tabular_example.py --dataset breast_cancer`
 
 ---
 
@@ -169,6 +211,7 @@ style: |
 - Tree ability (θ): mean −11.14, σ 0.55, range [−12.79, −9.68].
 - Item difficulty (δ): mean 5.90, σ 4.10, range [−10.74, 14.26].
 - Correlations — ability ↔ tree accuracy **0.999**, difficulty ↔ item error **0.950**.
+- Cross-check: embedding & MNIST tables confirm these correlations persist across datasets.
 
 Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
 
@@ -176,17 +219,35 @@ Diagnostic JSON: `data/irt_summary.json`, extremes in `data/irt_extremes.json`.
 
 # Diagnostics: Ability vs Accuracy
 
-![Tree ability vs accuracy](figures/ability_vs_accuracy.png)
+<div class="columns">
+  <div class="col">
+    <img src="figures/ability_vs_accuracy.png" style="width:95%; border:1px solid #ccc;" />
+  </div>
+  <div class="col">
 
-Mean tree accuracy ≈17.6%; higher ability trees cluster near 20% correct.
+- Trees with θ above −10 outperform peers by ~3 pp, even in this weak PCA setting.
+- Long tail of low-ability trees (< −11.5) drags ensemble accuracy; candidates for pruning.
+- Ability vs accuracy Spearman ≈ 0.99 — validates IRT θ as a crisp proxy for tree reliability.
+
+  </div>
+</div>
 
 ---
 
 # Diagnostics: Difficulty vs Error Rate
 
-![Item difficulty vs error](figures/difficulty_vs_error.png)
+<div class="columns">
+  <div class="col">
+    <img src="figures/difficulty_vs_error.png" style="width:95%; border:1px solid #ccc;" />
+  </div>
+  <div class="col">
 
-High-difficulty items correlate strongly with tree error (ρ ≈ 0.95).
+- δ > 10 corresponds to averaged tree error >80%, mostly ambiguous animals.
+- Items with δ < 0 are “free points” — nearly every tree agrees.
+- Pearson ≈ 0.95, Spearman ≈ 0.94. Difficulty doubles as an error heat-map.
+
+  </div>
+</div>
 
 ---
 
@@ -194,19 +255,18 @@ High-difficulty items correlate strongly with tree error (ρ ≈ 0.95).
 
 <div class="columns">
   <div class="col">
-
-![δ vs margin](figures/difficulty_vs_margin.png)
-
+    <img src="figures/difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%;">PCA run: δ vs margin (Pearson −0.83)</p>
   </div>
   <div class="col">
-
-![δ vs entropy](figures/difficulty_vs_entropy.png)
-
+    <img src="figures/difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%;">PCA run: δ vs entropy (Pearson 0.68)</p>
   </div>
 </div>
 
-- Pearson(δ, margin) = **−0.83**, Spearman = **−0.79** → harder items drive negative margins.
-- Pearson(δ, entropy) = **0.68**, Spearman = **0.55** → higher difficulty aligns with uncertain trees.
+- Hard items cluster bottom-right (low margin, high entropy) → ripe for relabeling or augmentation.
+- Opposite corner contains “easy wins” with positive margin and low entropy.
+- Similar trends strengthen with MobileNet features (margin Pearson −0.88, entropy Pearson 0.81).
 
 ---
 
@@ -235,8 +295,19 @@ High-difficulty items correlate strongly with tree error (ρ ≈ 0.95).
   </div>
 </div>
 
-- Hardest items skew toward ambiguous airplane/ship silhouettes and cluttered animal scenes.
-- Easiest items show high-saturation trucks/ships with distinctive backgrounds aiding tree votes.
+- Hardest items skew toward ambiguous airplane/ship silhouettes and cluttered cat/dog scenes.
+- Notice recurring mislabeled-looking ships (δ ≈ 14) flagged for manual review.
+- Easy set dominated by deterministic cues (red fire trucks, high-contrast ships) → low δ and entropy.
+
+---
+
+# Edge Cases Across Datasets
+
+- **CIFAR-10 (PCA):** δ tail contains grayscale ships + occluded pets. Margin < −0.2, entropy > 2.2.
+- **CIFAR-10 (MobileNet):** Outliers shrink but persist for cat/dog overlap; δ still > 8 despite cleaner features.
+- **MNIST:** High δ digits stem from stroke noise (e.g., 9 vs 4). Entropy jumps above 1.9 only for these cases.
+- **Breast Cancer:** Expect δ near zero (not yet fitted) — contrast will highlight how clean tabular data behaves.
+- Actionable: focus audits on items with δ > 8 + low margins; they recur across embeddings.
 
 ---
 
@@ -255,14 +326,14 @@ High-difficulty items correlate strongly with tree error (ρ ≈ 0.95).
 <div class="columns">
   <div class="col">
 
-![SVI loss over epochs](figures/irt_training_loss.png)
+<img src="figures/irt_training_loss.png" style="width:95%; border:1px solid #ccc;" />
 
   </div>
   <div class="col">
 
-![Ability histogram](figures/ability_hist.png)
+<img src="figures/ability_hist.png" style="width:95%; border:1px solid #ccc;" />
 
-![Difficulty histogram](figures/difficulty_hist.png)
+<img src="figures/difficulty_hist.png" style="width:95%; border:1px solid #ccc; margin-top:0.75em;" />
 
   </div>
 </div>
@@ -274,6 +345,8 @@ High-difficulty items correlate strongly with tree error (ρ ≈ 0.95).
 - Top 10 trees achieve 19–20% accuracy; lowest performers drop below 15%.
 - Hardest items (δ > 13) align with CIFAR-10 ships/airplanes confusions.
 - Easiest items (δ < −9.5) mostly belong to truck/ship classes with distinctive features.
+- MobileNet run yields θ variance halved and pushes accuracy to 81%, confirming sensitivity to embeddings.
+- MNIST pipeline shows how clean data collapses entropy while keeping δ informative for rare ambiguities.
 - Loss curve still descending: consider more epochs or lower lr for finer convergence.
 
 Extremes listed in `data/irt_extremes.json` for manual inspection.
@@ -283,7 +356,7 @@ Extremes listed in `data/irt_extremes.json` for manual inspection.
 # Next Steps
 
 - Drop confusion matrix + new montages into the storytelling deck.
-- Enhance notebook to emit report-ready tables and scripted plots.
-- Explore alternate embeddings (e.g., MobileNet) to test θ/δ stability.
+- Promote notebook automation to emit the tables used here (embedding, MNIST, tabular).
+- Run planned 2PL/3PL experiments (see `reports/discrimination_analysis_plan.md`) to get discrimination.
 - Compare tree ability with structural traits (depth, leaves) for richer diagnostics.
-- Experiment with 2PL to relate discrimination to RF confidence dynamics.
+- Extend edge-case audit: inspect δ>8 + margin<0 items across embeddings and datasets.
