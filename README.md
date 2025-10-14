@@ -79,8 +79,14 @@ Use this README as a **recursive prompt**. Each commit:
 - 2PL fits refreshed for **all** studies (PCA, MobileNet, MNIST) with dataset-specific summaries (`data/*/irt_summary_2pl.json`) and updated scatter plots (`figures/*_2pl_*`).
 - 3PL pilot on CIFAR + MobileNet (1k epochs @ 0.01 LR) capturing per-item guessing priors; outputs stored under `data/mobilenet/irt_*_3pl.*`.
 - Tree-attribute export + correlation tooling (`scripts/train_random_forest.py --tree-attributes`, `scripts/analyze_tree_attribute_correlations.py`) producing per-tree CSV/JSON reports and figure sets (`figures/*_tree_*.png`).
+- Item/person fit-statistics pipeline (`scripts/compute_fit_statistics.py`) writing `person_fit_stats*.csv` and `item_fit_stats*.csv` for every available study/model.
 
 ### In Flight / Next
+- QA refresh on figures: inject dataset + experiment identifiers into every plot title before publishing.
+- Random forest reruns with ~2000 trees per study (and updated response matrices/metrics) to support the high-capacity comparison.
+- Long-horizon IRT fits (2000-epoch 1PL/2PL/3PL sweeps) using the new RF outputs; monitor loss convergence and compare summaries.
+- Integrate item/person fit statistics into `slides.md` (flagging >1.2 underfit or <0.8 overfit cases) and decide how to surface them alongside Wright maps.
+- Debug MNIST 1PL artifacts (ability vector size mismatch) prior to regenerating its fit statistics.
 - Evaluate whether 3PL adds lift beyond 2PL on MNIST and PCA baselines (or conclude it's unnecessary).
 - Stress-test discrimination stability with smaller forests (50/100 trees) and alternate seeds.
 - Automate the notebook export so plots/tables land in `reports/` and `slides.md` without manual copy-paste.
@@ -137,6 +143,7 @@ python scripts/visualize_difficulty_extremes.py --split test --count 10
 python scripts/class_difficulty_summary.py
 python scripts/plot_confusion_matrix.py --normalize
 python scripts/plot_additional_diagnostics.py --data-dir data --figures-dir figures --label "CIFAR-10 · PCA · 2PL" --suffix _2pl
+python scripts/compute_fit_statistics.py --overwrite
 ```
 
 
