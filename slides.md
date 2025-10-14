@@ -25,14 +25,14 @@ footer: Andrew T. Scott &copy; 2025, UTA VLM Lab, Fall 2025
 
 # IRTForests
 
-### Random Forest × Item Response Theory Diagnostics
+### Random Forest + Item Response Theory
 
 <p style="font-size:80%; margin-top:2.5em;">Andrew T. Scott · Fall 2025</p>
 <p style="font-size:70%;"><a href="https://github.com/ascott02/IRTForests">github.com/ascott02/IRTForests</a></p>
 
 ---
 
-# Random Forest × Item Response Theory
+# Random Forest + Item Response Theory
 
 - Trees become respondents, images become items.
 - Response matrix records per-tree correctness on held-out examples.

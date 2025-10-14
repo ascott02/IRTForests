@@ -1,37 +1,56 @@
 # Discrimination Analysis Plan
 
+## Context Snapshot
+- Response matrices already exist for all three studies:
+  - `data/response_matrix.npz` (CIFAR + PCA),
+  - `data/mobilenet/response_matrix.npz` (CIFAR + MobileNet),
+  - `data/mnist/response_matrix.npz` (MNIST control).
+- Qualitative montages now accompany each study in the deck (`figures/*/hardest_*`, `figures/*/easiest_*`), making it straightforward to cross-reference high-δ items once discrimination scores are available.
+- Slides close with a “Next Steps” prompt that already calls out the 2PL/3PL extension; this plan should feed directly into that follow-up narrative.
+
 ## Objectives
 - Extend the RF × IRT study beyond the Rasch/1PL setting to capture item discrimination (\(a\)) and, optionally, guessing (\(c\)).
 - Diagnose how tree-level characteristics (depth, leaf count, OOB accuracy) relate to estimated discrimination values.
-- Evaluate whether high-discrimination items align with high RF entropy or misclassification clusters, informing data curation.
+- Evaluate whether high-discrimination items align with high RF entropy or misclassification clusters across *all* studies, informing data curation and dataset comparisons.
 
 ## Proposed Experiments
-1. **2PL Fit on Existing CFAIR-10 Runs**
-   - Input: existing response matrices (`data/response_matrix.npz`, `data/mobilenet/response_matrix.npz`).
-   - Method: switch `py-irt` model to 2PL (or alternative library) and record \(a\), \(b\) (difficulty), \(\theta\).
-   - Output artifacts: `irt_parameters_2pl.npz`, `irt_summary_2pl.json`, comparison plots (discrimination histograms, \(a\) vs entropy).
-2. **Model Stability Checks**
-   - Run shorter forests (e.g., 50/100 trees) to confirm discrimination estimates remain stable with fewer respondents.
-   - Compare discrimination statistics across PCA vs MobileNet runs.
-3. **Tree Attribute Correlation**
-   - Extract depth/leaf count per tree from scikit-learn estimators.
-   - Correlate with \(\theta\) and 2PL discrimination parameters.
-   - Visualize via scatter plots and grouped summaries.
-4. **Item Cluster Analysis**
-   - Segment items by discrimination (high/medium/low) and inspect original images for qualitative patterns.
-   - Cross-tab discrimination with RF entropy, margin, and class labels.
+1. **2PL Fits on Existing Studies**
+   - Inputs: the three response matrices listed above; reuse cached splits to keep comparisons apples-to-apples.
+   - Method: switch `py-irt` to `TwoParamLogistic` (verify API; fallback to `pyirt` if needed) and export \(a\), \(b\), \(\theta\).
+   - Outputs per study: `irt_parameters_2pl.npz`, `irt_summary_2pl.json`, discrimination histograms, \(a\) vs margin/entropy scatter plots.
+2. **3PL Pilot (Optional)**
+   - Attempt a 3PL fit on the CIFAR + MobileNet run to test whether a guessing parameter \(c\) yields additional insight.
+   - Record convergence behaviour and determine whether the added complexity justifies the runtime for other studies.
+3. **Model Stability Checks**
+   - Train reduced forests (50 and 100 trees) on PCA embeddings to see how respondent count affects \(a\) estimates.
+   - Repeat if time permits for MobileNet to confirm robustness under stronger features.
+4. **Tree Attribute Correlation**
+   - Extract depth, leaf count, and OOB accuracy per tree using scikit-learn estimators.
+   - Correlate these attributes with \(\theta\) and \(a\); produce scatter plots and Spearman/Pearson summaries.
+   - Prioritize deltas between PCA and MobileNet to highlight how feature richness alters discrimination dynamics.
+5. **Item Cluster Analysis**
+   - Bucket items into high/medium/low discrimination tiers; overlay with existing qualitative grids for each study.
+   - Cross-tab \(a\) with RF entropy, margin, and class labels. Flag items where high discrimination co-occurs with persistent misclassification.
+6. **Slide + Report Integration**
+   - Summarize discrimination findings in one new slide per study (or a combined cross-study slide) and add a synthesis bullet to the existing “Next Steps” section.
+   - Extend `reports/embedding_comparison.md` with a discrimination table to keep notebooks and slides in sync.
 
 ## Implementation Notes
-- `py-irt` exposes 2PL via `TwoParamLogistic` (verify API, otherwise adapt or use `pyirt`).
-- Increase epochs or adjust learning rate if 2PL loss converges slowly.
-- Ensure reproducibility: log seeds, optimizer settings, and runtime per experiment.
+- `py-irt` exposes 2PL via `TwoParamLogistic`; confirm support for batching the larger MobileNet matrix. If blocked, pivot to `pyirt` or a lightweight Pyro implementation.
+- Expect slower convergence than Rasch—start with 800 epochs, lower learning rate (0.02), and monitor ELBO.
+- Cache intermediate diagnostics (`data/*/irt_training_loss_2pl.npy`) to avoid reruns when tweaking hyperparameters.
+- Reuse the new qualitative figures by overlaying discrimination tiers in captions rather than generating fresh grids from scratch.
+- Ensure reproducibility: fix seeds, log optimizer settings, hardware, and runtime per study in `reports/rf_irt_summary.json` (extend schema if needed).
 
 ## Deliverables
-- Updated scripts to fit 2PL and export diagnostics.
-- New figures: discrimination histogram, \(a\) vs entropy/margin scatter, tree attribute vs discrimination plots.
-- Slide updates summarizing discrimination findings and their implications for RF analysis.
+- `scripts/fit_irt.py`: parameterized to toggle 1PL/2PL/3PL and output per-study artifacts.
+- `scripts/analyze_rf_irt_correlations.py`: extended to handle \(a\) correlations and generate comparison plots.
+- Figures: discrimination histograms, \(a\) vs entropy/margin scatter, tree attribute vs discrimination scatter, item-tier heatmaps.
+- Documentation: updated `reports/embedding_comparison.md` and new slide content covering discrimination insights.
+- Optional notebook cell(s) to run the entire discrimination suite end-to-end for reproducibility.
 
 ## Open Questions
 - Do we need a partial-credit or nominal response model for multi-class nuances?
 - Should we treat classes separately to inspect discrimination per class group?
 - How sensitive are discrimination estimates to label noise versus genuine ambiguity?
+- Does MNIST’s near-perfect accuracy compress \(a\) enough that 3PL becomes unnecessary for “easy” datasets?

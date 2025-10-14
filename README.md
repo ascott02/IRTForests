@@ -66,51 +66,21 @@ Use this README as a **recursive prompt**. Each commit:
 
 ---
 
-## Tasks (bite‑sized)
+## Milestones
 
-**T0 – Repo Setup**
+### Completed
+- Repo scaffolding (`notebooks/`, `src/`, `data/`, `figures/`) with reproducible `requirements.txt`.
+- CIFAR-10 embeddings (PCA + MobileNet) and MNIST control run cached under `data/`.
+- Random Forest training, signal extraction, and confusion diagnostics stored for every study.
+- Response matrix builds and 1PL (`Rasch`) IRT fits with ability/difficulty exports and plots.
+- Comparative analysis pipeline: Wright maps, δ↔margin/entropy correlations, class difficulty summaries, qualitative hardest/easiest grids.
+- Deck + reports: `slides.md`, `reports/embedding_comparison.md`, `reports/mnist_summary.md`, and supporting figures all synced to the latest runs.
 
-* [x] Create folders: `notebooks/`, `src/`, `data/`, `figures/`.
-* [x] Add `environment.yml` or `requirements.txt`.
-
-**T1 – Data & Embeddings**
-
-* [x] Download CIFAR‑10 via `torchvision`.
-* [x] Build embeddings (PCA‑128) cached to `data/cifar10_embeddings.npz` (shape `(12000, 128)`).
-
-**T2 – Random Forest**
-
-* [x] Train `RandomForestClassifier(n_estimators=200, max_depth=None, n_jobs=-1)`.
-* [x] Save: accuracy, per‑class accuracy, confusion matrix (`data/rf_metrics.json`, `data/rf_confusion.npy`).
-* [x] Save: `feature_importances_` (Gini) and permutation importance (`data/rf_feature_importances.npy`, `data/rf_permutation_importance.csv`).
-* [x] Compute per‑example **margin** = p(correct class) − max p(other classes) and per‑item entropy (`scripts/compute_rf_signals.py` → `data/rf_margins.npy`, `data/rf_entropy.npy`).
-
-**T3 – Build Response Matrix R**
-
-* [x] Collect each tree’s predicted label on **test**. `R` stored in `data/response_matrix.npz` (shape `(200, 2000)`).
-* [x] Persist `R` (e.g., `np.save('data/response_matrix.npy', R)`).
-
-**T4 – IRT Fit**
-
-* [x] Fit **1PL (Rasch)** using `py-irt` via `scripts/fit_irt.py` (SVI, 600 epochs).
-* [x] Extract (\theta) for trees, (\delta) for items (`data/irt_parameters.npz`).
-* [x] Validate convergence; plot histograms of (\theta), (\delta) (`figures/ability_hist.png`, `figures/difficulty_hist.png`) and monitor loss (`figures/irt_training_loss.png`).
-
-**T5 – Comparative Analysis**
-
-* [x] Plot **Wright Map**: tree abilities vs item difficulties on shared axis (`figures/wright_map.png`).
-* [x] Correlate item difficulty (\delta) with RF **margin** and **entropy**; report Pearson/Spearman (`scripts/analyze_rf_irt_correlations.py` → `data/rf_irt_correlations.json`, scatter plots in `figures/`).
-* [x] Identify top‑10 **hard items** (high (\delta)); visualize and inspect (`scripts/visualize_difficulty_extremes.py` → `figures/hardest_items_test.png`, `figures/easiest_items_test.png`).
-* [x] Class‑wise view: average (\delta) per class vs RF error per class (`scripts/class_difficulty_summary.py` → `data/class_difficulty_summary.json`, `figures/class_difficulty_vs_error.png`).
-
-**T6 – Slides**
-
-* [ ] Autogenerate `slides.md` sections (see template below) with key plots and tables.
-
-**T7 – Polish**
-
-* [ ] Re‑run with different `n_estimators` (e.g., 50/100/300) to see stability of (\theta), (\delta).
-* [ ] Optional: try **2PL** and compare discrimination (a) with RF **tree depth** or **leaf count**.
+### In Flight / Next
+- Extend `scripts/fit_irt.py` to toggle 2PL/3PL fits and capture discrimination parameters (see `reports/discrimination_analysis_plan.md`).
+- Correlate discrimination (a) with tree structure (depth, leaves, OOB accuracy) via `scripts/analyze_rf_irt_correlations.py` updates.
+- Automate the notebook export so plots/tables land in `reports/` and `slides.md` without manual copy-paste.
+- Probe parameter stability with smaller forests (50/100 trees) before scaling the discrimination study.
 
 ---
 
@@ -290,13 +260,6 @@ marp-cli  # optional for slide rendering
 
 ---
 
-## Next Edit Cycle (post confusion matrix integration)
+## Next Edit Cycle
 
-Completed this round: qualitative extremes rendered, class summaries plotted, notebook analytics scripted, and confusion matrix visuals integrated.
-
-Upcoming priorities:
-
-* [ ] Extend notebook to bake in report-ready tables/plots (Markdown export or HTML snippet generation).
-* [ ] Experiment with alternative embedding backbones (e.g., MobileNet) to stress-test δ distributions.
-* [ ] Compare per-tree ability against structural metrics (depth, leaf count) for richer RF diagnostics.
-* [ ] Explore 2PL fit and evaluate discrimination parameters vs RF confidence (plan drafted in `reports/discrimination_analysis_plan.md`).
+Focus shifts to discrimination analysis: implement 2PL fits, extend correlation tooling, and feed condensed takeaways back into `slides.md` and the reports set. Notebook automation should follow once the new experiments stabilize.
