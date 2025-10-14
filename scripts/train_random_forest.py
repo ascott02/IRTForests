@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Dict, List
 
@@ -85,6 +86,17 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional path to export per-tree attributes (depth, leaves, OOB accuracy).",
     )
+    parser.add_argument(
+        "--parallel-backend",
+        choices=("loky", "threading"),
+        default="loky",
+        help="Joblib backend for parallelism; 'threading' avoids extra data copies.",
+    )
+    parser.add_argument(
+        "--no-oob",
+        action="store_true",
+        help="Disable OOB scoring to save memory (metrics will report NaN).",
+    )
     return parser.parse_args()
 
 
@@ -104,8 +116,22 @@ def load_embeddings(path: Path) -> Dict[str, np.ndarray]:
         missing = required - set(data.files)
         if missing:
             raise KeyError(f"Embeddings archive missing keys: {sorted(missing)}")
-        arrays = {name: data[name] for name in required}
+        arrays: Dict[str, np.ndarray] = {}
+        for name in required:
+            arr = data[name]
+            if "embeddings" in name:
+                arrays[name] = np.asarray(arr, dtype=np.float32, order="C")
+            elif name.startswith("y_"):
+                arrays[name] = np.asarray(arr, dtype=np.int32, order="C")
+            else:
+                arrays[name] = arr
     return arrays
+
+
+def _joblib_backend(args: argparse.Namespace):
+    if args.n_jobs == 1 or args.parallel_backend == "loky":
+        return nullcontext()
+    return joblib.parallel_backend(args.parallel_backend, n_jobs=args.n_jobs)
 
 
 def train_random_forest(
@@ -119,9 +145,10 @@ def train_random_forest(
         min_samples_leaf=args.min_samples_leaf,
         n_jobs=args.n_jobs,
         random_state=args.random_state,
-        oob_score=True,
+        oob_score=not args.no_oob,
     )
-    rf.fit(features["train_embeddings"], features["y_train"])
+    with _joblib_backend(args):
+        rf.fit(features["train_embeddings"], features["y_train"])
     return rf
 
 
@@ -250,14 +277,15 @@ def save_artifacts(
         json.dump(metrics, fh, indent=2)
 
     # Permutation importance on validation data for interpretability.
-    perm = permutation_importance(
-        rf,
-        features["val_embeddings"],
-        features["y_val"],
-        n_repeats=args.permutation_repeats,
-        random_state=args.random_state,
-        n_jobs=args.n_jobs,
-    )
+    with _joblib_backend(args):
+        perm = permutation_importance(
+            rf,
+            features["val_embeddings"],
+            features["y_val"],
+            n_repeats=args.permutation_repeats,
+            random_state=args.random_state,
+            n_jobs=args.n_jobs,
+        )
     importances_mean = perm["importances_mean"]
     importances_std = perm["importances_std"]
     permutation_df = pd.DataFrame(
