@@ -74,11 +74,12 @@ Use this README as a **recursive prompt**. Each commit:
 - Random Forest training, signal extraction, and confusion diagnostics stored for every study.
 - Response matrix builds and 1PL (`Rasch`) IRT fits with ability/difficulty exports and plots.
 - Comparative analysis pipeline: Wright maps, δ↔margin/entropy correlations, class difficulty summaries, qualitative hardest/easiest grids.
+- 2PL discrimination pipeline (`scripts/fit_irt.py --model 2pl`) with new artifacts (`data/irt_parameters_2pl.npz`, `data/irt_summary_2pl.json`, `data/rf_irt_correlations_2pl.json`, `figures/2pl_*`, `figures/discrimination_hist.png`).
 - Deck + reports: `slides.md`, `reports/embedding_comparison.md`, `reports/mnist_summary.md`, and supporting figures all synced to the latest runs.
 
 ### In Flight / Next
-- Extend `scripts/fit_irt.py` to toggle 2PL/3PL fits and capture discrimination parameters (see `reports/discrimination_analysis_plan.md`).
-- Correlate discrimination (a) with tree structure (depth, leaves, OOB accuracy) via `scripts/analyze_rf_irt_correlations.py` updates.
+- Pilot the 3PL extension (starting with CIFAR + MobileNet) and record convergence behaviour vs. 2PL.
+- Correlate discrimination (a) with tree structure (depth, leaves, OOB accuracy) once 2PL runs land for every study.
 - Automate the notebook export so plots/tables land in `reports/` and `slides.md` without manual copy-paste.
 - Probe parameter stability with smaller forests (50/100 trees) before scaling the discrimination study.
 
@@ -94,6 +95,7 @@ Use this README as a **recursive prompt**. Each commit:
 - **Diagnostics:** Shared plots for PCA (`figures/*.png`) and MobileNet (`figures/mobilenet/*.png`) cover histograms, loss curves, Wright maps, and δ vs signal scatterplots.
 - **RF signals:** PCA margins average **−0.0028**, entropy **2.15**; MobileNet margins **0.2806**, entropy **1.47** (JSON summaries in `data/rf_signal_summary.json` and `data/mobilenet/rf_signal_summary.json`).
 - **Cross-model correlations:** PCA δ↔margin Pearson **−0.83**, δ↔entropy **0.68** vs. MobileNet δ↔margin **−0.88**, δ↔entropy **0.81** (`data/rf_irt_correlations.json`, `data/mobilenet/rf_irt_correlations.json`).
+- **Discrimination baseline:** 2PL fit on the PCA study (800 epochs @ 0.02 LR) logs slope stats in `data/irt_summary_2pl.json`, discrimination correlations in `data/rf_irt_correlations_2pl.json`, and new plots (`figures/2pl_*`, `figures/discrimination_hist.png`).
 - **Qualitative inspection:** CIFAR-10 hardest/easiest montages (PCA) plus new MobileNet Wright map for improved alignment between ability and accuracy.
 - **Reports:** `reports/embedding_comparison.md` captures a side-by-side metric table; notebook exports still provide class summaries and run metadata (`reports/class_difficulty_summary.md`, `reports/rf_irt_summary.json`).
 - **Discrimination roadmap:** See `reports/discrimination_analysis_plan.md` for the 2PL/ability-depth follow-up design.
@@ -105,12 +107,17 @@ Run the IRT stage end-to-end:
 ```bash
 source .venv/bin/activate
 python scripts/fit_irt.py --epochs 600 --learning-rate 0.05 --verbose --log-every 100
+# Optional discrimination fit (writes *_2pl artifacts)
+python scripts/fit_irt.py --model 2pl --epochs 800 --learning-rate 0.02 --log-every 100 --response-matrix data/response_matrix.npz
 python scripts/compute_rf_signals.py
 python scripts/analyze_rf_irt_correlations.py
+# Regenerate δ and a scatter plots for the 2PL run
+python scripts/analyze_rf_irt_correlations.py --irt-params data/irt_parameters_2pl.npz --output-name rf_irt_correlations_2pl.json --figures-dir figures --prefix 2pl --parameters difficulty discrimination
 python scripts/plot_wright_map.py
 python scripts/visualize_difficulty_extremes.py --split test --count 10
 python scripts/class_difficulty_summary.py
 python scripts/plot_confusion_matrix.py --normalize
+python scripts/plot_additional_diagnostics.py --data-dir data --figures-dir figures --label "CIFAR-10 · PCA · 2PL" --suffix _2pl
 ```
 
 

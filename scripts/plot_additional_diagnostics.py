@@ -4,24 +4,28 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 
-def load_run_arrays(data_dir: Path) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Load ability, difficulty, tree accuracy, and item error arrays."""
-    params = np.load(data_dir / "irt_parameters.npz")
+def load_run_arrays(
+    data_dir: Path,
+    suffix: str = "",
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Optional[np.ndarray]]:
+    """Load ability, difficulty, tree accuracy, item error, and optional discrimination arrays."""
+    params = np.load(data_dir / f"irt_parameters{suffix}.npz")
     ability = params["ability_loc"]
     difficulty = params["diff_loc"]
+    slope = params["slope_loc"] if "slope_loc" in params.files else None
 
     resp = np.load(data_dir / "response_matrix.npz")
     R = resp["R"].astype(np.float32)
 
     tree_accuracy = R.mean(axis=1)
     item_error = 1.0 - R.mean(axis=0)
-    return ability, difficulty, tree_accuracy, item_error
+    return ability, difficulty, tree_accuracy, item_error, slope
 
 
 def scatter_plot(
@@ -62,6 +66,19 @@ def scatter_plot(
     plt.close(fig)
 
 
+def hist_plot(values: np.ndarray, xlabel: str, title: str, output_path: Path) -> None:
+    plt.style.use("seaborn-v0_8-whitegrid")
+    fig, ax = plt.subplots(figsize=(7, 5))
+    ax.hist(values, bins=30, alpha=0.75, color="#4c72b0")
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("Count")
+    ax.set_title(title)
+    fig.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=200)
+    plt.close(fig)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", type=Path, required=True, help="Path to run-specific data directory")
@@ -69,9 +86,15 @@ def main() -> None:
         "--figures-dir", type=Path, required=True, help="Directory where figures should be written"
     )
     parser.add_argument("--label", type=str, required=True, help="Label used in figure subtitles")
+    parser.add_argument(
+        "--suffix",
+        type=str,
+        default="",
+        help="Suffix appended to IRT parameter filenames (e.g., _2pl).",
+    )
     args = parser.parse_args()
 
-    ability, difficulty, tree_accuracy, item_error = load_run_arrays(args.data_dir)
+    ability, difficulty, tree_accuracy, item_error, slope = load_run_arrays(args.data_dir, args.suffix)
 
     ability_path = args.figures_dir / "ability_vs_accuracy.png"
     scatter_plot(
@@ -94,6 +117,15 @@ def main() -> None:
         subtitle=args.label,
         output_path=difficulty_path,
     )
+
+    if slope is not None:
+        slope_path = args.figures_dir / "discrimination_hist.png"
+        hist_plot(
+            slope,
+            xlabel="Discrimination (a)",
+            title="Item Discrimination Distribution",
+            output_path=slope_path,
+        )
 
 
 if __name__ == "__main__":

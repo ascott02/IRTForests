@@ -13,3 +13,14 @@ PCA reflects the original 128-D projection, MobileNet uses a pretrained MobileNe
 | Pearson δ↔entropy | 0.6782 | 0.8113 |
 | Ability σ | 0.5473 | 0.2549 |
 | Difficulty σ | 4.1029 | 4.6663 |
+
+## Discrimination Snapshot (CIFAR + PCA · 2PL)
+
+| Metric | Value |
+|---|---|
+| Mean discrimination (a) | 0.2867 |
+| Discrimination σ | 0.0819 |
+| Pearson a↔margin | -0.8508 |
+| Pearson a↔entropy | 0.6214 |
+
+> MobileNet + MNIST 2PL runs pending; rerun this table once their artifacts land.

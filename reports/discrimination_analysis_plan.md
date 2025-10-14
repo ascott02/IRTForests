@@ -13,10 +13,15 @@
 - Diagnose how tree-level characteristics (depth, leaf count, OOB accuracy) relate to estimated discrimination values.
 - Evaluate whether high-discrimination items align with high RF entropy or misclassification clusters across *all* studies, informing data curation and dataset comparisons.
 
+## Progress Update (Oct 2025)
+- `scripts/fit_irt.py` now toggles between 1PL/2PL/3PL; the CIFAR + PCA study has an 800-epoch 2PL run cached as `data/irt_parameters_2pl.npz` / `data/irt_summary_2pl.json`.
+- Fresh discrimination diagnostics ship alongside the run: `data/rf_irt_correlations_2pl.json`, `figures/2pl_*` scatter plots, and `figures/discrimination_hist.png`.
+- Correlation CLI accepts multiple parameters (`--parameters difficulty discrimination`) so δ and \(a\) plots/json summaries stay in sync with new fits.
+
 ## Proposed Experiments
-1. **2PL Fits on Existing Studies**
+1. **2PL Fits on Existing Studies** *(baseline CIFAR + PCA done; replicate for remaining studies)*
    - Inputs: the three response matrices listed above; reuse cached splits to keep comparisons apples-to-apples.
-   - Method: switch `py-irt` to `TwoParamLogistic` (verify API; fallback to `pyirt` if needed) and export \(a\), \(b\), \(\theta\).
+   - Method: run `python scripts/fit_irt.py --model 2pl --response-matrix <path> --epochs 800 --learning-rate 0.02` and export \(a\), \(b\), \(\theta\).
    - Outputs per study: `irt_parameters_2pl.npz`, `irt_summary_2pl.json`, discrimination histograms, \(a\) vs margin/entropy scatter plots.
 2. **3PL Pilot (Optional)**
    - Attempt a 3PL fit on the CIFAR + MobileNet run to test whether a guessing parameter \(c\) yields additional insight.
@@ -37,6 +42,7 @@
 
 ## Implementation Notes
 - `py-irt` exposes 2PL via `TwoParamLogistic`; confirm support for batching the larger MobileNet matrix. If blocked, pivot to `pyirt` or a lightweight Pyro implementation.
+- `scripts/fit_irt.py --model {1pl,2pl,3pl}` now drives all fits; 3PL currently supports only `--priors vague` and returns \(c\) via Beta posteriors.
 - Expect slower convergence than Rasch—start with 800 epochs, lower learning rate (0.02), and monitor ELBO.
 - Cache intermediate diagnostics (`data/*/irt_training_loss_2pl.npy`) to avoid reruns when tweaking hyperparameters.
 - Reuse the new qualitative figures by overlaying discrimination tiers in captions rather than generating fresh grids from scratch.
@@ -46,6 +52,7 @@
 - `scripts/fit_irt.py`: parameterized to toggle 1PL/2PL/3PL and output per-study artifacts.
 - `scripts/analyze_rf_irt_correlations.py`: extended to handle \(a\) correlations and generate comparison plots.
 - Figures: discrimination histograms, \(a\) vs entropy/margin scatter, tree attribute vs discrimination scatter, item-tier heatmaps.
+- `scripts/plot_additional_diagnostics.py`: drops `discrimination_hist.png` whenever slope estimates exist.
 - Documentation: updated `reports/embedding_comparison.md` and new slide content covering discrimination insights.
 - Optional notebook cell(s) to run the entire discrimination suite end-to-end for reproducibility.
 

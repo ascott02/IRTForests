@@ -635,6 +635,35 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 ---
 
+# 2PL Discrimination Baseline (CIFAR + PCA)
+
+- 800-epoch 2PL fit (lr 0.02) yields mean \(a\) ≈ **0.29** with σ ≈ **0.08** (range 0.06–0.50).
+- \(a\) tracks RF uncertainty tightly: Pearson \(a\leftrightarrow\) margin **−0.85**, \(a\leftrightarrow\) entropy **0.62**.
+- High-discrimination tail isolates the cat/dog ambiguity previously flagged by δ alone.
+- Artifacts: `data/irt_parameters_2pl.npz`, `data/rf_irt_correlations_2pl.json`, `figures/2pl_*`, `figures/discrimination_hist.png`.
+
+---
+
+# 2PL Diagnostics
+
+<div class="columns">
+  <div class="col">
+
+![2PL discrimination vs margin](figures/2pl_discrimination_vs_margin.png)
+
+  </div>
+  <div class="col">
+
+![Discrimination histogram](figures/discrimination_hist.png)
+
+  </div>
+</div>
+
+- High-\(a\) items carry persistently low margins; easy items cluster at high confidence.
+- Slope distribution tightens around 0.3, signalling that only a narrow band of items sharply separates trees.
+
+---
+
 # Key Takeaways
 
 - IRT mirrors RF uncertainty: θ tracks per-tree accuracy and δ tracks item error across studies.
@@ -646,7 +675,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # Next Steps
 
-- Extend notebooks to auto-export the comparison tables and montages.
-- Run the queued 2PL/3PL experiments (`reports/discrimination_analysis_plan.md`).
-- Correlate θ with tree structure (depth, leaf count) to guide pruning.
-- Scale the δ + margin triage on CIFAR before moving to tabular studies.
+- Extend notebooks to auto-export the comparison tables, montages, and discrimination plots.
+- Replicate 2PL for MobileNet & MNIST, then pilot the 3PL guess parameter on the MobileNet study.
+- Correlate θ and \(a\) with tree structure (depth, leaves, OOB) to drive pruning decisions.
+- Run reduced-tree stability sweeps (50/100 trees) before porting the pipeline to additional domains.
