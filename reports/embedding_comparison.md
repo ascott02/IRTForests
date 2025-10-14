@@ -4,23 +4,22 @@ PCA reflects the original 128-D projection, MobileNet uses a pretrained MobileNe
 
 | Metric | PCA | MobileNet |
 |---|---|---|
-| Overall accuracy | 0.4305 | 0.8090 |
-| Validation accuracy | 0.4145 | 0.8135 |
-| OOB accuracy | 0.3730 | 0.7967 |
+| Overall accuracy | 0.4335 | 0.8090 |
+| Validation accuracy | 0.4235 | 0.8135 |
+| OOB accuracy | 0.3630 | 0.7967 |
 | Margin mean | -0.0028 | 0.2806 |
 | Entropy mean | 2.1503 | 1.4663 |
-| Pearson δ↔margin | -0.8286 | -0.8825 |
-| Pearson δ↔entropy | 0.6782 | 0.8113 |
-| Ability σ | 0.5473 | 0.2549 |
-| Difficulty σ | 4.1029 | 4.6663 |
+| Pearson δ↔margin (2PL) | -0.198 | -0.718 |
+| Pearson δ↔entropy (2PL) | 0.165 | 0.632 |
+| Ability σ (2PL) | 0.155 | 0.338 |
+| Difficulty σ (2PL) | 0.070 | 0.104 |
 
-## Discrimination Snapshot (CIFAR + PCA · 2PL)
+## Discrimination Snapshot (2PL)
 
-| Metric | Value |
-|---|---|
-| Mean discrimination (a) | 0.2867 |
-| Discrimination σ | 0.0819 |
-| Pearson a↔margin | -0.8508 |
-| Pearson a↔entropy | 0.6214 |
+| Study | Mean a | σ(a) | Pearson a↔margin | Pearson a↔entropy |
+|---|---|---|---|---|
+| CIFAR + PCA | 0.286 | 0.081 | -0.734 | 0.596 |
+| CIFAR + MobileNet | 0.167 | 0.052 | -0.828 | 0.672 |
+| MNIST Mini | 0.240 | 0.164 | +0.893 | -0.958 |
 
-> MobileNet + MNIST 2PL runs pending; rerun this table once their artifacts land.
+MNIST flips correlation signs because almost every item is easy—high discrimination now marks the rare ambiguous strokes.

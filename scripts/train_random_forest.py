@@ -6,13 +6,15 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import accuracy_score, confusion_matrix
+
+import joblib
 
 
 def parse_args() -> argparse.Namespace:
@@ -70,6 +72,18 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=10,
         help="Number of repeats for permutation importance on the validation split.",
+    )
+    parser.add_argument(
+        "--save-model",
+        type=Path,
+        default=None,
+        help="Optional path to persist the trained RandomForestClassifier (joblib).",
+    )
+    parser.add_argument(
+        "--tree-attributes",
+        type=Path,
+        default=None,
+        help="Optional path to export per-tree attributes (depth, leaves, OOB accuracy).",
     )
     return parser.parse_args()
 
@@ -163,6 +177,45 @@ def build_response_matrix(
     return matrix
 
 
+def compute_tree_attributes(
+    rf: RandomForestClassifier,
+    features: Dict[str, np.ndarray],
+) -> List[Dict[str, float | int]]:
+    X_train = features["train_embeddings"]
+    y_train = features["y_train"]
+    attributes: List[Dict[str, float | int]] = []
+
+    has_samples = hasattr(rf, "estimators_samples_")
+    for idx, tree in enumerate(rf.estimators_):
+        depth = int(tree.tree_.max_depth)  # type: ignore[attr-defined]
+        n_leaves = int(tree.tree_.n_leaves)  # type: ignore[attr-defined]
+
+        oob_accuracy = float("nan")
+        oob_count = 0
+        if has_samples:
+            samples = rf.estimators_samples_[idx]  # type: ignore[attr-defined]
+            if samples is not None:
+                mask = np.ones(X_train.shape[0], dtype=bool)
+                mask[samples] = False
+                oob_indices = np.flatnonzero(mask)
+                oob_count = int(oob_indices.size)
+                if oob_indices.size > 0:
+                    preds = tree.predict(X_train[oob_indices])
+                    oob_accuracy = float(np.mean(preds == y_train[oob_indices]))
+
+        attributes.append(
+            {
+                "tree_index": idx,
+                "depth": depth,
+                "n_leaves": n_leaves,
+                "oob_accuracy": oob_accuracy,
+                "oob_count": oob_count,
+            }
+        )
+
+    return attributes
+
+
 def save_artifacts(
     rf: RandomForestClassifier,
     features: Dict[str, np.ndarray],
@@ -215,6 +268,16 @@ def save_artifacts(
         }
     )
     permutation_df.to_csv(output_dir / "rf_permutation_importance.csv", index=False)
+
+    if args.save_model is not None:
+        args.save_model.parent.mkdir(parents=True, exist_ok=True)
+        joblib.dump(rf, args.save_model)
+
+    if args.tree_attributes is not None:
+        tree_attrs = compute_tree_attributes(rf, features)
+        args.tree_attributes.parent.mkdir(parents=True, exist_ok=True)
+        with args.tree_attributes.open("w", encoding="utf-8") as fh:
+            json.dump(tree_attrs, fh, indent=2)
 
 
 def main() -> None:

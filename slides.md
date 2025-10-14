@@ -625,20 +625,20 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 | Study | Feature Backbone | Test Acc | δ ↔ margin (Pearson) | δ ↔ entropy (Pearson) | θ σ | δ σ |
 |---|---|---|---|---|---|---|
-| Study I: CIFAR + PCA-128 | PCA-128 | 0.4305 | −0.8286 | 0.6782 | 0.55 | 4.10 |
-| Study II: CIFAR + MobileNet | MobileNet-V3 (960-D) | 0.8090 | −0.8825 | 0.8113 | 0.25 | 4.67 |
-| Study III: MNIST Mini | Raw pixels | 0.9475 | −0.950 | 0.958 | 0.44 | 8.19 |
+| Study I: CIFAR + PCA-128 | PCA-128 | 0.4335 | −0.198 | 0.165 | 0.155 | 0.070 |
+| Study II: CIFAR + MobileNet | MobileNet-V3 (960-D) | 0.8090 | −0.718 | 0.632 | 0.338 | 0.104 |
+| Study III: MNIST Mini | Raw pixels | 0.9550 | −0.528 | 0.549 | 0.261 | 0.084 |
 
-- Feature backbone drives both accuracy gains and δ alignment strength.
-- θ variance collapses with MobileNet (0.25) while MNIST keeps moderate spread despite high accuracy.
-- MNIST δ σ expands to 8.19, highlighting rare but extreme digit ambiguities versus CIFAR’s visual noise.
+- Feature backbone still shapes δ alignment: PCA’s δ↔margin weakens under 2PL (−0.20) while MobileNet retains a strong negative trend (−0.72).
+- θ spread remains compact (σθ ≈0.16–0.34) with MNIST slightly wider despite high accuracy.
+- Discrimination variance stays tight (σδ ≈0.07–0.10); MobileNet preserves the broadest slope tail among the studies.
 
 ---
 
 # 2PL Discrimination Baseline (CIFAR + PCA)
 
-- 800-epoch 2PL fit (lr 0.02) yields mean \(a\) ≈ **0.29** with σ ≈ **0.08** (range 0.06–0.50).
-- \(a\) tracks RF uncertainty tightly: Pearson \(a\leftrightarrow\) margin **−0.85**, \(a\leftrightarrow\) entropy **0.62**.
+- 800-epoch 2PL fit (lr 0.02) yields mean \(a\) ≈ **0.29** with σ ≈ **0.08** (range 0.06–0.53).
+- \(a\) tracks RF uncertainty tightly: Pearson \(a\leftrightarrow\) margin **−0.73**, \(a\leftrightarrow\) entropy **0.60**.
 - High-discrimination tail isolates the cat/dog ambiguity previously flagged by δ alone.
 - Artifacts: `data/irt_parameters_2pl.npz`, `data/rf_irt_correlations_2pl.json`, `figures/2pl_*`, `figures/discrimination_hist.png`.
 
@@ -664,18 +664,83 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 ---
 
+# 2PL Discrimination (CIFAR + MobileNet)
+
+- Mean \(a\) drops to **0.17 ± 0.05** yet retains a positive tail (max ≈0.36).
+- \(a\leftrightarrow\) margin **−0.83** and \(a\leftrightarrow\) entropy **+0.67** keep cat/dog confusion in focus.
+- Artifacts: `data/mobilenet/irt_parameters_2pl.npz`, `data/mobilenet/rf_irt_correlations_2pl.json`, `figures/mobilenet_2pl_*`.
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/mobilenet_2pl_discrimination_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+  </div>
+  <div class="col">
+    <img src="figures/mobilenet_2pl_discrimination_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+  </div>
+</div>
+
+- Even at 81% accuracy, a narrow band of animal images still drives the steepest slopes.
+
+---
+
+# 2PL Discrimination (MNIST)
+
+- Mean \(a\) lifts to **0.24 ± 0.16** because only a few digits truly separate trees.
+- \(a\leftrightarrow\) margin **+0.89** while \(a\leftrightarrow\) entropy **−0.96** flips sign—uncertainty vanishes outside the awkward strokes.
+- Artifacts: `data/mnist/irt_parameters_2pl.npz`, `data/mnist/rf_irt_correlations_2pl.json`, `figures/mnist_2pl_*`.
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/mnist_2pl_discrimination_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+  </div>
+  <div class="col">
+    <img src="figures/mnist_2pl_discrimination_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+  </div>
+</div>
+
+- High-\(a\) digits align with the stroke collisions spotted earlier (3↔5, 4↔9).
+
+---
+
+# 3PL Pilot · MobileNet
+
+- 1k-epoch 3PL run (lr 0.01) converged with guess mean **0.25 ± 0.13**.
+- \(\theta\leftrightarrow\) accuracy Pearson **0.98**; slope mean extends to **0.23** with a wider separation tail.
+- High-guess items concentrate on background-heavy aircraft & cats—evidence of latent “guessing” behaviour.
+
+---
+
+# Tree Attribute Correlations
+
+- `scripts/analyze_tree_attribute_correlations.py` merges depth/leaves/OOB stats with \(\theta\) + discrimination aggregates.
+- MobileNet: leaf count ↔ \(\theta\) Pearson **−0.78**, OOB ↔ \(\theta\) **+0.75**—shallow, accurate trees shine.
+- PCA baseline: leaf count ↔ \(\theta\) **−0.20**, OOB ↔ \(\theta\) **+0.28**; MNIST shows similar leaf penalties (−0.47).
+
+<div class="columns">
+  <div class="col">
+    <img src="figures/mobilenet_tree_oob_accuracy_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+  </div>
+  <div class="col">
+    <img src="figures/pca_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+  </div>
+</div>
+
+- CSV/JSON exports: `data/*/tree_attributes_with_signals.csv`, `data/*/tree_attribute_correlations*.json`.
+
+---
+
 # Key Takeaways
 
-- IRT mirrors RF uncertainty: θ tracks per-tree accuracy and δ tracks item error across studies.
-- Feature backbones reshape the θ/δ landscape—MobileNet curbs variance yet preserves a hard-item tail.
-- Pairing δ with margins and entropy cleanly triages ambiguous classes without manual inspection.
-- MNIST confirms the pipeline before we branch to new domains.
+- IRT and RF still move in lockstep: \(\theta\) tracks per-tree accuracy, while δ and \(a\) surface stubborn item pockets.
+- MobileNet’s discrimination tail isolates animal confusions despite stronger features; MNIST flips signs because mistakes are rare.
+- 3PL adds a modest guessing floor (~0.25) without upsetting \(\theta\)–accuracy alignment.
+- Tree attributes expose pruning cues: shallow, high-OOB trees consistently land higher \(\theta\).
 
 ---
 
 # Next Steps
 
-- Extend notebooks to auto-export the comparison tables, montages, and discrimination plots.
-- Replicate 2PL for MobileNet & MNIST, then pilot the 3PL guess parameter on the MobileNet study.
-- Correlate θ and \(a\) with tree structure (depth, leaves, OOB) to drive pruning decisions.
-- Run reduced-tree stability sweeps (50/100 trees) before porting the pipeline to additional domains.
+- Fold discrimination stats into `reports/embedding_comparison.md` & deck tables for quick grabs.
+- Run stability sweeps (50/100 trees, alternate seeds) to quantify variance in \(a\) and \(\theta\).
+- Decide whether 3PL merits extension to PCA/MNIST or documenting as MobileNet-only.
+- Finish item-tier overlays (high/medium/low \(a\)) and align them with the qualitative grids.
