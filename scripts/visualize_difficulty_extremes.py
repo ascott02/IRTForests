@@ -29,6 +29,12 @@ def parse_args() -> argparse.Namespace:
         help="Root directory containing cached CIFAR-10 data (train/test).",
     )
     parser.add_argument(
+        "--dataset-type",
+        choices=("cifar10", "mnist"),
+        default="cifar10",
+        help="Dataset family used when rendering thumbnails.",
+    )
+    parser.add_argument(
         "--split",
         type=str,
         choices=("train", "test"),
@@ -47,6 +53,12 @@ def parse_args() -> argparse.Namespace:
         default=Path("figures"),
         help="Directory to write output montage images.",
     )
+    parser.add_argument(
+        "--noun",
+        type=str,
+        default="items",
+        help="Descriptor used in plot titles and filenames (e.g., items, digits).",
+    )
     return parser.parse_args()
 
 
@@ -58,18 +70,23 @@ def load_extreme_ids(path: Path, count: int) -> Tuple[List[int], List[int]]:
     return hardest, easiest
 
 
-def load_dataset(root: Path, split: str) -> torchvision.datasets.CIFAR10:
+def load_dataset(root: Path, split: str, dataset_type: str):
     transform = T.ToTensor()
     train = split == "train"
-    return torchvision.datasets.CIFAR10(root=str(root), train=train, download=False, transform=transform)
+    if dataset_type == "cifar10":
+        return torchvision.datasets.CIFAR10(root=str(root), train=train, download=False, transform=transform)
+    if dataset_type == "mnist":
+        return torchvision.datasets.MNIST(root=str(root), train=train, download=False, transform=transform)
+    raise ValueError(f"Unsupported dataset type: {dataset_type}")
 
 
 def build_montage(
-    dataset: torchvision.datasets.CIFAR10,
+    dataset,
     indices: List[int],
     title: str,
     output_path: Path,
     cols: int = 5,
+    dataset_type: str = "cifar10",
 ) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     count = len(indices)
@@ -79,8 +96,12 @@ def build_montage(
 
     for ax, idx in zip(axes, indices):
         img, label = dataset[idx]
-        ax.imshow(np.transpose(img.numpy(), (1, 2, 0)))
-        ax.set_title(dataset.classes[label], fontsize=10)
+        if dataset_type == "mnist":
+            ax.imshow(np.squeeze(img.numpy()), cmap="gray")
+        else:
+            ax.imshow(np.transpose(img.numpy(), (1, 2, 0)))
+        class_name = dataset.classes[label] if hasattr(dataset, "classes") else str(label)
+        ax.set_title(str(class_name), fontsize=10)
         ax.axis("off")
 
     for ax in axes[count:]:
@@ -96,23 +117,25 @@ def build_montage(
 def main() -> None:
     args = parse_args()
     hardest_ids, easiest_ids = load_extreme_ids(args.extremes, args.count)
-    dataset = load_dataset(args.dataset, args.split)
+    dataset = load_dataset(args.dataset, args.split, args.dataset_type)
 
     build_montage(
         dataset,
         hardest_ids,
-        title=f"Top {args.count} Hardest Items (δ high)",
-        output_path=args.output_prefix / f"hardest_items_{args.split}.png",
+        title=f"Top {args.count} Hardest {args.noun.title()} (δ high)",
+        output_path=args.output_prefix / f"hardest_{args.noun}_{args.split}.png",
+        dataset_type=args.dataset_type,
     )
     build_montage(
         dataset,
         easiest_ids,
-        title=f"Top {args.count} Easiest Items (δ low)",
-        output_path=args.output_prefix / f"easiest_items_{args.split}.png",
+        title=f"Top {args.count} Easiest {args.noun.title()} (δ low)",
+        output_path=args.output_prefix / f"easiest_{args.noun}_{args.split}.png",
+        dataset_type=args.dataset_type,
     )
     print(
-        f"Wrote montages: {args.output_prefix / f'hardest_items_{args.split}.png'} and "
-        f"{args.output_prefix / f'easiest_items_{args.split}.png'}"
+        f"Wrote montages: {args.output_prefix / f'hardest_{args.noun}_{args.split}.png'} and "
+        f"{args.output_prefix / f'easiest_{args.noun}_{args.split}.png'}"
     )
 
 

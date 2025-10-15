@@ -158,7 +158,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 **Modeling Status**
 
 - RF (200 trees) trained for every study; metrics and importances saved.
-- Response matrices persisted: CIFAR `(200 × 2000)` for PCA & MobileNet, MNIST `(200 × 800)`.
+- Response matrices persisted: CIFAR `(2000 × 2000)` for PCA & MobileNet, MNIST `(2000 × 800)`.
 - 1PL Rasch (SVI, 600 epochs) complete for CIFAR; MNIST mirrors the same notebook.
 
   </div>
@@ -189,7 +189,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 # Study I: CIFAR-10 + PCA-128 Embeddings
 
 - Baseline vision setup: 64×64 resize + PCA to 128 dims.
-- 200-tree Random Forest with a 200 × 2000 response matrix anchors the diagnostics.
+- 2000-tree Random Forest with a 2000 × 2000 response matrix anchors the diagnostics.
 - Use this run to surface weak trees and mislabeled items.
 
 ---
@@ -201,7 +201,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
     <ul>
   <li>Fixed stratified CIFAR-10 split (10k / 2k / 2k).</li>
   <li>Resize 64×64, normalize, PCA → 128-D embeddings (`data/cifar10_embeddings.npz`).</li>
-  <li>Response matrix 200 × 2000 with mean tree accuracy 0.176.</li>
+  <li>Response matrix 2000 × 2000 with mean tree accuracy 0.176.</li>
   <li>Artifacts: metrics, margins, entropy, IRT outputs under `data/` and `figures/`.</li>
     </ul>
   </div>
@@ -219,17 +219,17 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 | Metric | Value |
 |---|---|
-| Test / Val / OOB acc | 0.4305 / 0.4145 / 0.3730 |
-| Per-class range | 0.225 (cat) → 0.595 (ship) |
-| Mean tree accuracy | 0.1759 |
-| Mean margin / entropy | −0.0028 / 2.1503 |
-| δ ↔ margin (Pearson) | −0.8286 |
-| δ ↔ entropy (Pearson) | 0.6782 |
+| Test / Val / OOB acc | 0.468 / 0.470 / 0.442 |
+| Per-class range | 0.260 (bird) → 0.635 (ship) |
+| Mean tree accuracy | 0.1763 |
+| Mean margin / entropy | 0.0058 / 2.1723 |
+| δ ↔ margin (Pearson) | −0.815 |
+| δ ↔ entropy (Pearson) | 0.687 |
 
 </small>
 
-- Baseline ensemble underperforms due to weak PCA features yet preserves δ alignment.
-- Margins sit near zero and entropy stays high, signalling broad disagreement—prime for IRT.
+- Baseline ensemble still underperforms due to weak PCA features yet preserves δ alignment.
+- Margins hover near zero (mean ≈0.006) and entropy stays high (2.17), signalling broad disagreement—prime for IRT.
 - Artifacts: metrics (`data/rf_metrics.json`), confusion (`data/rf_confusion.npy`), importances, permutations.
 
 ---
@@ -263,14 +263,14 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
   <div class="col">
   <center>
-    <img width="84%" src="figures/wright_map.png" style="width:95%; border:1px solid #ccc;" />
-    <p style="font-size:85%; text-align:center;">Wright map: θ cluster near −11; δ stretches to 14</p>
+  <img width="84%" src="figures/wright_map.png" style="width:95%; border:1px solid #ccc;" />
+  <p style="font-size:85%; text-align:center;">Wright map: θ around −4; δ spans roughly [−0.5, 0.6]</p>
     </center>
   </div>
 </div>
 
-- Trees with θ above −10 beat peers by ~3 pp even with PCA features.
-- Long-tail θ < −11.5 drags accuracy, and the Wright map shows δ stretching far beyond the compressed ability range.
+- θ spans roughly −4.7 to −3.7; a +0.2 shift in ability still separates stronger trees by ~3 pp.
+- δ clusters near zero but stretches past ±0.5, flagging the ambiguous animal images against a compressed ability band.
 
 ---
 
@@ -282,8 +282,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
   <div class="col">
 
-- δ > 10 maps to >80% tree error—mostly ambiguous animals—while δ < 0 becomes “free points.”
-- Pearson ≈ 0.95, Spearman ≈ 0.94: difficulty doubles as an error heat-map.
+- δ > 0.4 maps to >80% tree error—mostly ambiguous animals—while δ < −0.3 becomes “free points.”
+- Pearson ≈ 0.87, Spearman ≈ 0.86: difficulty doubles as an error heat-map.
 
   </div>
 </div>
@@ -295,14 +295,14 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 <div class="columns">
   <div class="col">
   <center>
-    <img src="figures/difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%;">PCA run: δ vs margin (Pearson −0.83)</p>
+  <img src="figures/difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+  <p style="font-size:85%;">PCA run: δ vs margin (Pearson −0.82)</p>
     </center>
   </div>
   <div class="col">
   <center>
-    <img src="figures/difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%;">PCA run: δ vs entropy (Pearson 0.68)</p>
+  <img src="figures/difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+  <p style="font-size:85%;">PCA run: δ vs entropy (Pearson 0.69)</p>
     </center>
   </div>
 </div>
@@ -361,7 +361,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
     <ul>
   <li>Reuse Study I splits to isolate feature effects.</li>
   <li>Extract 960-D MobileNet-V3 Small embeddings (`data/cifar10_mobilenet_embeddings.npz`).</li>
-  <li>Response matrix 200 × 2000 with mean tree accuracy 0.482.</li>
+  <li>Response matrix 2000 × 2000 with mean tree accuracy 0.479.</li>
   <li>Artifacts live under `data/mobilenet/*` and `figures/mobilenet/`.</li>
     </ul>
   </div>
@@ -377,14 +377,14 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 | Metric | Value |
 |---|---|
-| Test / Val / OOB acc | 0.8090 / 0.8135 / 0.7967 |
-| Per-class range | 0.68 (cat) → 0.915 (ship) |
-| Mean tree accuracy | 0.4817 |
-| Mean margin / entropy | 0.2806 / 1.4663 |
-| δ ↔ margin (Pearson) | −0.8825 |
-| δ ↔ entropy (Pearson) | 0.8113 |
+| Test / Val / OOB acc | 0.819 / 0.820 / 0.812 |
+| Per-class range | 0.695 (bird) → 0.925 (ship) |
+| Mean tree accuracy | 0.4792 |
+| Mean margin / entropy | 0.2806 / 1.4929 |
+| δ ↔ margin (Pearson) | −0.950 |
+| δ ↔ entropy (Pearson) | 0.881 |
 
-- Pretrained features boost accuracy by 37 pp while strengthening δ correlations.
+- Pretrained features boost accuracy by 35 pp while strengthening δ correlations.
 - Higher margins and lower entropy show confidence gains except on stubborn animal classes.
 - Artifacts: metrics, response matrix, signals, and IRT outputs under `data/mobilenet/`.
 
@@ -396,13 +396,13 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   <div class="col">
   <center>
     <img width="85%" src="figures/mobilenet/mobilenet_difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%;">δ vs margin (Pearson −0.88)</p>
+  <p style="font-size:85%;">δ vs margin (Pearson −0.95)</p>
   </center>
   </div>
   <div class="col">
   <center>
     <img width="85%" src="figures/mobilenet/mobilenet_difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%;">δ vs entropy (Pearson 0.81)</p>
+  <p style="font-size:85%;">δ vs entropy (Pearson 0.88)</p>
   </center>
   </div>
 </div>
@@ -419,18 +419,18 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   <div class="col">
   <center>
     <img width="85%" src="figures/mobilenet/ability_vs_accuracy.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%; text-align:center;">Ability (θ) vs tree accuracy — Pearson 0.983</p>
+  <p style="font-size:85%; text-align:center;">Ability (θ) vs tree accuracy — Pearson 0.96</p>
   </center>
   </div>
   <div class="col">
   <center>
     <img width="84%%" src="figures/mobilenet/wright_map.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%; text-align:center;">Wright map: θ variance shrinks to 0.25</p>
+  <p style="font-size:85%; text-align:center;">Wright map: θ ≈ −0.46 ± 0.23; δ spans ±2.1</p>
   </center>
   </div>
 </div>
 
-- θ mean −0.21 ± 0.25: trees cluster far tighter than the PCA baseline (σ 0.55 → 0.25).
+- θ mean −0.46 ± 0.23 keeps the ensemble tightly banded while still ranking trees cleanly.
 - Ability remains tied to per-tree accuracy, so feature quality—rather than tree diversity—now caps gains.
 
 ---
@@ -443,8 +443,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
   <div class="col">
 
-- Pearson 0.922 keeps δ aligned with mean tree error even at the higher accuracy ceiling.
-- Hardest items (δ > 8) persist—mostly cat/dog overlaps and ambiguous aircraft—while the easy zone (δ < −3) expands.
+- Pearson 0.99 keeps δ aligned with mean tree error even at the higher accuracy ceiling.
+- Hardest items (δ > 1.5) persist—mostly cat/dog overlaps and ambiguous aircraft—while the easy zone (δ < −1) expands.
 
   </div>
 </div>
@@ -466,14 +466,14 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
 </div>
 
-- MobileNet tightens easy clusters yet the same cat/dog outliers survive with δ > 8.
+- MobileNet tightens easy clusters yet the same cat/dog outliers survive with δ > 1.5.
 - Easy wins sharpen into high-contrast ships and trucks, showing how feature upgrades cleanly separate low-δ items.
 
 ---
 
 # Study II Takeaways
 
-- MobileNet embeddings add 37 pp of accuracy while collapsing ability variance (σθ 0.55 → 0.25).
+- MobileNet embeddings add 35 pp of accuracy while maintaining a focused ability band (σθ ≈0.23).
 - δ stays aligned with RF uncertainty, isolating a smaller yet stubborn ambiguous cluster.
 - Residual cat/dog confusion points to data curation as the next lever.
 
@@ -501,7 +501,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
     <ul>
   <li>Split 4k / 800 / 800 digits with stratified sampling and a fixed seed.</li>
   <li>Flatten 28×28 grayscale digits; no augmentation.</li>
-  <li>Train a 200-tree RF on raw pixels; response matrix 200 × 800.</li>
+  <li>Train a 2000-tree RF on raw pixels; response matrix 2000 × 800.</li>
   <li>Artifacts land in `data/mnist/` with plots in `figures/mnist/`.</li>
     </ul>
   </div>
@@ -518,14 +518,14 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 | Metric | Value |
 |---|---|
 | Train / Val / Test | 4000 / 800 / 800 |
-| RF test / val / OOB | 0.9475 / 0.9413 / 0.9140 |
-| Mean margin / entropy | 0.5546 / 1.0351 |
-| δ ↔ margin (Pearson) | −0.950 |
-| δ ↔ entropy (Pearson) | 0.958 |
-| θ mean ± σ | 4.23 ± 0.44 |
-| δ mean ± σ | −1.75 ± 8.19 |
+| RF test / val / OOB | 0.954 / 0.944 / 0.939 |
+| Mean margin / entropy | 0.5644 / 1.0768 |
+| δ ↔ margin (Pearson) | −0.975 |
+| δ ↔ entropy (Pearson) | 0.970 |
+| θ mean ± σ | 3.04 ± 0.29 |
+| δ mean ± σ | −0.13 ± 0.47 |
 
-- Ambiguous digits (e.g., brushed 5 vs 6) spike δ toward ±20; elsewhere the forest is decisive.
+- Ambiguous digits (e.g., brushed 5 vs 6) still spike δ toward the positive tail; elsewhere the forest is decisive.
 - Low entropy + high margin line up with low δ, giving a “sanity benchmark” beyond CIFAR.
 
 ---
@@ -535,16 +535,16 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 <div class="columns">
   <div class="col">
     <img src="figures/mnist/mnist_difficulty_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%;">δ vs margin (Pearson −0.95)</p>
+  <p style="font-size:85%;">δ vs margin (Pearson −0.97)</p>
   </div>
   <div class="col">
     <img src="figures/mnist/mnist_difficulty_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%;">δ vs entropy (Pearson 0.96)</p>
+  <p style="font-size:85%;">δ vs entropy (Pearson 0.97)</p>
   </div>
 </div>
 
 - Clean digits show near-perfect alignment between δ and RF uncertainty.
-- Only a handful of δ > 12 digits drive the residual uncertainty (stroke collisions like 3/5, 4/9).
+- Only a handful of δ > 1.2 digits drive the residual uncertainty (stroke collisions like 3/5, 4/9).
 
 ---
 
@@ -554,19 +554,19 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   <div class="col">
   <center>
     <img width="75%" src="figures/mnist/ability_vs_accuracy.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%; text-align:center;">Ability (θ) vs tree accuracy — Pearson 0.995</p>
+  <p style="font-size:85%; text-align:center;">Ability (θ) vs tree accuracy — Pearson 0.98</p>
   </center>
   </div>
   <div class="col">
   <center>
     <img width="74%" src="figures/mnist/wright_map.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%; text-align:center;">Wright map: θ mean 4.23 ± 0.44; δ mean −1.75 ± 8.19</p>
+  <p style="font-size:85%; text-align:center;">Wright map: θ mean 3.04 ± 0.29; δ mean −0.13 ± 0.47</p>
   </center>
   </div>
 </div>
 
-- θ mean 4.23 ± 0.44 shows strong consensus, while δ mean −1.75 ± 8.19 keeps heavy tails for ambiguous strokes.
-- Shared scales expose plentiful easy wins with a few sharp spikes—opposite of the CIFAR baseline.
+- θ mean 3.04 ± 0.29 shows strong consensus, while δ mean −0.13 ± 0.47 keeps a modest positive tail for ambiguous strokes.
+- Shared scales expose plentiful easy wins with only a few sharp spikes—opposite of the CIFAR baseline.
 
 
 ---
@@ -579,8 +579,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
   <div class="col">
 
-- Pearson 0.962 keeps δ tied to mean tree error despite the high accuracy ceiling.
-- δ > 12 corresponds to stroke-collided 3/5/8 and 4/9 pairs; the long negative tail is trivial for the ensemble.
+- Pearson 0.98 keeps δ tied to mean tree error despite the high accuracy ceiling.
+- δ > 1.2 corresponds to stroke-collided 3/5/8 and 4/9 pairs; the long negative tail is trivial for the ensemble.
 
   </div>
 </div>
@@ -602,7 +602,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
 </div>
 
-- Hardest digits show stroke collisions (3↔5, 4↔9) that push δ above 12 despite high margins elsewhere.
+- Hardest digits show stroke collisions (3↔5, 4↔9) that push δ above 1 despite high margins elsewhere.
 - Easy digits are crisp, centered strokes—useful anchors when explaining why δ plunges on most of the dataset.
 
 ---
@@ -625,20 +625,20 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 | Study | Feature Backbone | Test Acc | δ ↔ margin (Pearson) | δ ↔ entropy (Pearson) | θ σ | δ σ |
 |---|---|---|---|---|---|---|
-| Study I: CIFAR + PCA-128 | PCA-128 | 0.4335 | −0.198 | 0.165 | 0.155 | 0.070 |
-| Study II: CIFAR + MobileNet | MobileNet-V3 (960-D) | 0.8090 | −0.718 | 0.632 | 0.338 | 0.104 |
-| Study III: MNIST Mini | Raw pixels | 0.9550 | −0.528 | 0.549 | 0.261 | 0.084 |
+| Study I: CIFAR + PCA-128 | PCA-128 | 0.468 | −0.815 | 0.687 | 0.154 | 0.150 |
+| Study II: CIFAR + MobileNet | MobileNet-V3 (960-D) | 0.819 | −0.950 | 0.881 | 0.228 | 0.871 |
+| Study III: MNIST Mini | Raw pixels | 0.954 | −0.975 | 0.970 | 0.289 | 0.472 |
 
-- Feature backbone still shapes δ alignment: PCA’s δ↔margin weakens under 2PL (−0.20) while MobileNet retains a strong negative trend (−0.72).
-- θ spread remains compact (σθ ≈0.16–0.34) with MNIST slightly wider despite high accuracy.
-- Discrimination variance stays tight (σδ ≈0.07–0.10); MobileNet preserves the broadest slope tail among the studies.
+- Feature backbone still shapes δ alignment: PCA lands near −0.82, MobileNet tightens to −0.95, and MNIST saturates the scale at −0.98.
+- θ spread remains compact (σθ ≈0.15–0.29) even with 2000 trees; MobileNet widens slightly as headroom grows.
+- Difficulty variance balloons on MobileNet (σδ ≈0.87) while MNIST stays moderate, underscoring how rich features surface nuanced “hard” digits.
 
 ---
 
 # 2PL Discrimination Baseline (CIFAR + PCA)
 
-- 800-epoch 2PL fit (lr 0.02) yields mean \(a\) ≈ **0.29** with σ ≈ **0.08** (range 0.06–0.53).
-- \(a\) tracks RF uncertainty tightly: Pearson \(a\leftrightarrow\) margin **−0.73**, \(a\leftrightarrow\) entropy **0.60**.
+- 800-epoch 2PL fit (lr 0.02) yields mean \(a\) ≈ **0.35** with σ ≈ **0.10** (range 0.07–0.71).
+- \(a\) tracks RF uncertainty tightly: Pearson \(a\leftrightarrow\) margin **−0.83**, \(a\leftrightarrow\) entropy **0.63**.
 - High-discrimination tail isolates the cat/dog ambiguity previously flagged by δ alone.
 - Artifacts: `data/irt_parameters_2pl.npz`, `data/rf_irt_correlations_2pl.json`, `figures/2pl_*`, `figures/discrimination_hist.png`.
 
@@ -666,8 +666,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # 2PL Discrimination (CIFAR + MobileNet)
 
-- Mean \(a\) drops to **0.17 ± 0.05** yet retains a positive tail (max ≈0.36).
-- \(a\leftrightarrow\) margin **−0.83** and \(a\leftrightarrow\) entropy **+0.67** keep cat/dog confusion in focus.
+- Mean \(a\) settles at **0.27 ± 0.15** with a modest tail (max ≈1.16).
+- \(a\leftrightarrow\) margin **−0.32** and \(a\leftrightarrow\) entropy **+0.10** keep residual cat/dog confusion in focus while the easy cluster sharpens.
 - Artifacts: `data/mobilenet/irt_parameters_2pl.npz`, `data/mobilenet/rf_irt_correlations_2pl.json`, `figures/mobilenet_2pl_*`.
 
 <div class="columns">
