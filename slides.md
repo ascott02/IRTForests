@@ -851,8 +851,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # 3PL Pilot · MobileNet
 
-- 1k-epoch 3PL run (lr 0.01) lands at guess mean **0.25 ± 0.13**.
-- θ vs accuracy stays tight (Pearson **0.98**); slopes average **0.23** with a broader tail.
+- 1k-epoch 3PL run (lr 0.01) lands at guess mean **0.35 ± 0.16**.
+- θ vs accuracy stays tight (Pearson **0.98**); slopes average **0.32 ± 0.08** with a broader tail.
 - High guess mass piles onto background-heavy aircraft & cats, reinforcing the “guessing” narrative.
 
 <center>

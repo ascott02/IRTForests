@@ -103,7 +103,6 @@ Use this README as a **recursive prompt**. Each commit:
   - PCA: ability mean **−4.23 ± 0.15**, slope mean **0.35 ± 0.10** (`data/irt_summary_2pl.json`).
   - MobileNet: ability mean **−0.46 ± 0.23**, slope mean **0.27 ± 0.15** (`data/mobilenet/irt_summary_2pl.json`).
   - MNIST: ability mean **3.04 ± 0.29**, slope mean **0.33 ± 0.25** (`data/mnist/irt_summary_2pl.json`).
-- **IRT fits (3PL pilot):** MobileNet guess mean **0.25 ± 0.13**, ability-to-accuracy corr **0.976** (`data/mobilenet/irt_summary_3pl.json`).
 - **IRT fits (3PL pilot):** MobileNet guess mean **0.35 ± 0.16**, ability-to-accuracy corr **0.977** (`data/mobilenet/irt_summary_3pl.json`).
 - **Discrimination correlations:** Updated scatter plots + JSON summaries in `data/*/rf_irt_correlations_2pl.json` (see `figures/*_2pl_*.png`). PCA slope ↔ margin Pearson **−0.83**; MobileNet slope ↔ margin **−0.32**; MNIST slope ↔ margin **0.85** with entropy signs flipped as expected on the near-perfect run.
 - **Tree attributes:** Per-tree stats exported as `data/*/tree_attributes_with_signals.csv`; notable trends include MobileNet leaf count vs θ (Pearson **−0.73**) and OOB accuracy vs θ (Pearson **0.70**).
