@@ -27,7 +27,7 @@ style: |
   .col {
     flex: 1;
   }
-footer: Andrew T. Scott &copy; 2025, UTA VLM Lab, Fall 2025
+footer: ATS&copy;2025
 ---
 
 # IRTForests
@@ -802,6 +802,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 - Mean 𝑎 settles at **0.27 ± 0.15** with a modest tail (max ≈1.16).
 - 𝑎 correlates with margin at **−0.32** and with entropy at **+0.10**, keeping residual cat/dog confusion in focus while the easy cluster sharpens.
+- Hexbins reveal the rotated "U": steep slopes sit at both extremes (hard animals, ultra-easy scenes), while mid-margin items stay flat.
 - Artifacts: `data/mobilenet/irt_parameters_2pl.npz`, `data/mobilenet/rf_irt_correlations_2pl.json`, `figures/mobilenet_2pl_*`.
 
 <div class="columns">
@@ -819,7 +820,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
 </div>
 
-- Even at 81% accuracy, a narrow band of animal images still drives the steepest slopes.
+- Even at 81% accuracy, the extreme animal band anchors the right branch of the "U" while cluttered backgrounds anchor the left.
 
 ---
 
@@ -850,9 +851,14 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # 3PL Pilot · MobileNet
 
-- 1k-epoch 3PL run (lr 0.01) converged with guess mean **0.25 ± 0.13**.
-- θ correlates with accuracy (Pearson **0.98**); slope mean extends to **0.23** with a wider separation tail.
-- High-guess items concentrate on background-heavy aircraft & cats—evidence of latent “guessing” behaviour.
+- 1k-epoch 3PL run (lr 0.01) lands at guess mean **0.25 ± 0.13**.
+- θ vs accuracy stays tight (Pearson **0.98**); slopes average **0.23** with a broader tail.
+- High guess mass piles onto background-heavy aircraft & cats, reinforcing the “guessing” narrative.
+
+<center>
+  <img width="86%" src="figures/mobilenet_3pl_guessing.png" style="width:100%; border:1px solid #ccc;" />
+  <p style="font-size:72%; text-align:center;">3PL MobileNet · Guess distribution (left) and entropy hotspots (right)</p>
+</center>
 
 ---
 
