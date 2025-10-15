@@ -6,7 +6,10 @@ paginate: true
 math: katex
 style: |
   section {
-    font-size: 150%;
+    font-size: 140%;
+  }
+  ul {
+    line-height: 1.2;
   }
   pre {
     vertical-align: text-top;
@@ -225,8 +228,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 | Per-class range | 0.260 (bird) → 0.635 (ship) |
 | Mean tree accuracy | 0.1763 |
 | Mean margin / entropy | 0.0058 / 2.1723 |
-| δ ↔ margin (Pearson) | −0.815 |
-| δ ↔ entropy (Pearson) | 0.687 |
+| δ negatively correlates with margin (Pearson) | −0.815 |
+| δ positively correlates with entropy (Pearson) | 0.687 |
 
 </small>
 
@@ -246,7 +249,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 **Reading the matrix**
 
-- Off-diagonal spikes (cat↔dog, bird↔airplane, horse↔deer) mirror high-δ items.
+- Off-diagonal spikes (cat vs dog, bird vs airplane, horse vs deer) mirror high-δ items.
 - Ships/trucks stay >80% on-diagonal; the highlighted hotspots mark curation targets.
 
   </div>
@@ -369,8 +372,10 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 - Each item sits below 9% tree accuracy—prime targets for relabeling or curated augmentations.
 
-    <img src="figures/study1_edge_cases.png" style="width:100%; border:1px solid #ccc; margin-top:0.8em;" />
+<center>
+    <img width="80%" src="figures/study1_edge_cases.png" style="width:100%; border:1px solid #ccc; margin-top:0.8em;" />
     <p style="font-size:75%; text-align:center;">Study I edge cases · IDs 118, 1734, 1602</p>
+</center>
 
   </div>
 </div>
@@ -418,8 +423,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 | Per-class range | 0.695 (bird) → 0.925 (ship) |
 | Mean tree accuracy | 0.4792 |
 | Mean margin / entropy | 0.2806 / 1.4929 |
-| δ ↔ margin (Pearson) | −0.950 |
-| δ ↔ entropy (Pearson) | 0.881 |
+| δ negatively correlates with margin (Pearson) | −0.950 |
+| δ positively correlates with entropy (Pearson) | 0.881 |
 
 - Pretrained features boost accuracy by 35 pp while strengthening δ correlations.
 - Higher margins and lower entropy show confidence gains except on stubborn animal classes.
@@ -542,9 +547,10 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 - `#95` airplane → bird (δ ≈ 14.8, margin ≈ −0.25, entropy ≈ 1.89; bird 0.32, deer 0.20, frog 0.17).
 
 - These persistent outliers survive the feature upgrade—queue them for image/label review next.
-
-    <img src="figures/study2_edge_cases.png" style="width:100%; border:1px solid #ccc; margin-top:0.8em;" />
+<center>
+    <img width="80%" src="figures/study2_edge_cases.png" style="width:100%; border:1px solid #ccc; margin-top:0.8em;" />
     <p style="font-size:75%; text-align:center;">Study II edge cases · IDs 1190, 1196, 95</p>
+</center>
 
   </div>
 </div>
@@ -592,8 +598,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 | Train / Val / Test | 4000 / 800 / 800 |
 | RF test / val / OOB | 0.954 / 0.944 / 0.939 |
 | Mean margin / entropy | 0.5644 / 1.0768 |
-| δ ↔ margin (Pearson) | −0.975 |
-| δ ↔ entropy (Pearson) | 0.970 |
+| δ negatively correlates with margin (Pearson) | −0.975 |
+| δ positively correlates with entropy (Pearson) | 0.970 |
 | θ mean ± σ | 3.04 ± 0.29 |
 | δ mean ± σ | −0.13 ± 0.47 |
 
@@ -674,7 +680,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
 </div>
 
-- Hardest digits show stroke collisions (3↔5, 4↔9) that push δ above 1 despite high margins elsewhere.
+- Hardest digits show stroke collisions (3 vs 5, 4 vs 9) that push δ above 1 despite high margins elsewhere.
 - Easy digits are crisp, centered strokes—useful anchors when explaining why δ plunges on most of the dataset.
 
 ---
@@ -713,8 +719,10 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 - Archive these strokes for a “confusing digits” gallery or curation playbook.
 
-    <img src="figures/study3_edge_cases.png" style="width:100%; border:1px solid #ccc; margin-top:0.8em;" />
+<center>
+    <img width="80%" src="figures/study3_edge_cases.png" style="width:100%; border:1px solid #ccc; margin-top:0.8em;" />
     <p style="font-size:75%; text-align:center;">Study III edge cases · IDs 296, 151, 708</p>
+<center>
 
   </div>
 </div>
@@ -730,13 +738,13 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # Cross-Study Snapshot
 
-| Study | Feature Backbone | Test Acc | δ ↔ margin (Pearson) | δ ↔ entropy (Pearson) | θ σ | δ σ |
+| Study | Feature Backbone | Test Acc | δ negatively correlates with margin (Pearson) | δ positively correlates with entropy (Pearson) | θ σ | δ σ |
 |---|---|---|---|---|---|---|
 | Study I: CIFAR + PCA-128 | PCA-128 | 0.468 | −0.815 | 0.687 | 0.154 | 0.150 |
 | Study II: CIFAR + MobileNet | MobileNet-V3 (960-D) | 0.819 | −0.950 | 0.881 | 0.228 | 0.871 |
 | Study III: MNIST Mini | Raw pixels | 0.954 | −0.975 | 0.970 | 0.289 | 0.472 |
 
-- Feature backbone still shapes δ alignment: PCA lands near −0.82, MobileNet tightens to −0.95, and MNIST saturates the scale at −0.98.
+- Across studies δ remains negatively correlated with margin and positively correlated with entropy: PCA lands near −0.82, MobileNet tightens to −0.95, and MNIST saturates the scale at −0.98.
 - θ spread remains compact (σθ ≈0.15–0.29) even with 2000 trees; MobileNet widens slightly as headroom grows.
 - Difficulty variance balloons on MobileNet (σδ ≈0.87) while MNIST stays moderate, underscoring how rich features surface nuanced “hard” digits.
 
@@ -758,7 +766,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 # 2PL Discrimination Baseline (CIFAR + PCA)
 
 - 800-epoch 2PL fit (lr 0.02) yields mean 𝑎 ≈ **0.35** with σ ≈ **0.10** (range 0.07–0.71).
-- 𝑎 tracks RF uncertainty tightly: Pearson 𝑎 ↔ margin **−0.83**, 𝑎 ↔ entropy **0.63**.
+- 𝑎 tracks RF uncertainty tightly: Pearson correlation of 𝑎 with margin is **−0.83**, and with entropy is **0.63**.
 - High-discrimination tail isolates the cat/dog ambiguity previously flagged by δ alone.
 - Artifacts: `data/irt_parameters_2pl.npz`, `data/rf_irt_correlations_2pl.json`, `figures/2pl_*`, `figures/discrimination_hist.png`.
 
@@ -787,7 +795,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 # 2PL Discrimination (CIFAR + MobileNet)
 
 - Mean 𝑎 settles at **0.27 ± 0.15** with a modest tail (max ≈1.16).
-- 𝑎 ↔ margin **−0.32** and 𝑎 ↔ entropy **+0.10** keep residual cat/dog confusion in focus while the easy cluster sharpens.
+- 𝑎 correlates with margin at **−0.32** and with entropy at **+0.10**, keeping residual cat/dog confusion in focus while the easy cluster sharpens.
 - Artifacts: `data/mobilenet/irt_parameters_2pl.npz`, `data/mobilenet/rf_irt_correlations_2pl.json`, `figures/mobilenet_2pl_*`.
 
 <div class="columns">
@@ -812,7 +820,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 # 2PL Discrimination (MNIST)
 
 - Mean 𝑎 lifts to **0.24 ± 0.16** because only a few digits truly separate trees.
-- 𝑎 ↔ margin **+0.89** while 𝑎 ↔ entropy **−0.96** flips sign—uncertainty vanishes outside the awkward strokes.
+- 𝑎 correlates with margin at **+0.89** while its correlation with entropy flips to **−0.96**—uncertainty vanishes outside the awkward strokes.
 - Artifacts: `data/mnist/irt_parameters_2pl.npz`, `data/mnist/rf_irt_correlations_2pl.json`, `figures/mnist_2pl_*`.
 
 <div class="columns">
@@ -830,14 +838,14 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
 </div>
 
-- High-𝑎 digits align with the stroke collisions spotted earlier (3↔5, 4↔9).
+- High-𝑎 digits align with the stroke collisions spotted earlier (3 vs 5, 4 vs 9).
 
 ---
 
 # 3PL Pilot · MobileNet
 
 - 1k-epoch 3PL run (lr 0.01) converged with guess mean **0.25 ± 0.13**.
-- θ ↔ accuracy Pearson **0.98**; slope mean extends to **0.23** with a wider separation tail.
+- θ correlates with accuracy (Pearson **0.98**); slope mean extends to **0.23** with a wider separation tail.
 - High-guess items concentrate on background-heavy aircraft & cats—evidence of latent “guessing” behaviour.
 
 ---
@@ -845,8 +853,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 # Tree Attribute Correlations
 
 - `scripts/analyze_tree_attribute_correlations.py` merges depth/leaves/OOB stats with θ + discrimination aggregates.
-- MobileNet: leaf count ↔ θ Pearson **−0.78**, OOB ↔ θ **+0.75**—shallow, accurate trees shine.
-- PCA baseline: leaf count ↔ θ **−0.20**, OOB ↔ θ **+0.28**; MNIST shows similar leaf penalties (−0.47).
+- MobileNet: Pearson corr. (leaf count, θ) **−0.78**; (OOB accuracy, θ) **+0.75**—shallow, accurate trees shine.
+- PCA baseline: Pearson corr. (leaf count, θ) **−0.20**; (OOB accuracy, θ) **+0.28**; MNIST shows similar leaf penalties (−0.47).
 
 <div class="columns">
   <div class="col">
