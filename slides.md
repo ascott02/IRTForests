@@ -3,6 +3,7 @@
 marp: true
 theme: default
 paginate: true
+class: invert
 math: katex
 style: |
   section {
@@ -10,6 +11,9 @@ style: |
   }
   ul {
     line-height: 1.2;
+  }
+  li {
+    margin-bottom: 0em;
   }
   pre {
     vertical-align: text-top;
@@ -366,14 +370,14 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 **Edge cases worth a look**
 
-- `#118` airplane → deer votes (δ ≈ 13.4, margin ≈ −0.05, entropy ≈ 2.28).
-- `#1734` ship → cat/frog split (δ ≈ 13.2, margin ≈ −0.09, entropy ≈ 2.27).
-- `#1602` ship → dog/horse tie (δ ≈ 13.2, margin ≈ −0.11, entropy ≈ 2.22).
+- `#118` bird → deer votes (δ ≈ 13.4, margin ≈ −0.05, entropy ≈ 2.28).
+- `#1734` truck → cat/frog split (δ ≈ 13.2, margin ≈ −0.09, entropy ≈ 2.27).
+- `#1602` horse → dog/horse tie (δ ≈ 13.2, margin ≈ −0.11, entropy ≈ 2.22).
 
 - Each item sits below 9% tree accuracy—prime targets for relabeling or curated augmentations.
 
 <center>
-    <img width="80%" src="figures/study1_edge_cases.png" style="width:100%; border:1px solid #ccc; margin-top:0.8em;" />
+    <img width="60%" src="figures/study1_edge_cases.png" style="width:100%; border:1px solid #ccc; margin-top:0.8em;" />
     <p style="font-size:75%; text-align:center;">Study I edge cases · IDs 118, 1734, 1602</p>
 </center>
 
@@ -515,7 +519,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # Study II Takeaways
 
-- MobileNet embeddings add 35 pp of accuracy while maintaining a focused ability band (σθ ≈0.23).
+- MobileNet embeddings add 35 pp of accuracy while maintaining a focused ability band (Std(θ) ≈ 0.23).
 - δ stays aligned with RF uncertainty, isolating a smaller yet stubborn ambiguous cluster.
 - Residual cat/dog confusion points to data curation as the next lever.
 
@@ -542,13 +546,13 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 **Edge cases worth a look**
 
-- `#1190` dog → frog votes (δ ≈ 15.4, margin ≈ −0.22, entropy ≈ 1.85; top probs frog 0.28, deer 0.27).
-- `#1196` dog → horse (δ ≈ 14.9, margin ≈ −0.38, entropy ≈ 1.31; horse 0.41, deer 0.41, bird 0.08).
-- `#95` airplane → bird (δ ≈ 14.8, margin ≈ −0.25, entropy ≈ 1.89; bird 0.32, deer 0.20, frog 0.17).
+- `#1190` automobile → frog votes (δ ≈ 15.4, margin ≈ −0.22, entropy ≈ 1.85; top probs frog 0.28, deer 0.27).
+- `#1196` bird → horse (δ ≈ 14.9, margin ≈ −0.38, entropy ≈ 1.31; horse 0.41, deer 0.41, bird 0.08).
+- `#95` frog → bird (δ ≈ 14.8, margin ≈ −0.25, entropy ≈ 1.89; bird 0.32, deer 0.20, frog 0.17).
 
 - These persistent outliers survive the feature upgrade—queue them for image/label review next.
 <center>
-    <img width="80%" src="figures/study2_edge_cases.png" style="width:100%; border:1px solid #ccc; margin-top:0.8em;" />
+    <img width="60%" src="figures/study2_edge_cases.png" style="width:100%; border:1px solid #ccc; margin-top:0.8em;" />
     <p style="font-size:75%; text-align:center;">Study II edge cases · IDs 1190, 1196, 95</p>
 </center>
 
@@ -600,8 +604,8 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 | Mean margin / entropy | 0.5644 / 1.0768 |
 | δ negatively correlates with margin (Pearson) | −0.975 |
 | δ positively correlates with entropy (Pearson) | 0.970 |
-| θ mean ± σ | 3.04 ± 0.29 |
-| δ mean ± σ | −0.13 ± 0.47 |
+| θ mean ± std | 3.04 ± 0.29 |
+| δ mean ± std | −0.13 ± 0.47 |
 
 - Ambiguous digits (e.g., brushed 5 vs 6) still spike δ toward the positive tail; elsewhere the forest is decisive.
 - Low entropy + high margin line up with low δ, giving a “sanity benchmark” beyond CIFAR.
@@ -713,14 +717,14 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 **Edge cases worth a look**
 
-- `#296` digit 3 → vote 7 (δ ≈ 17.6, margin ≈ −0.35, entropy ≈ 1.83; top probs 7=0.38, 9=0.18, 4=0.16).
-- `#151` digit 1 → vote 6 (δ ≈ 17.3, margin ≈ −0.34, entropy ≈ 1.93; top probs 6=0.39, 5=0.12, 2=0.10).
-- `#708` digit 8 → vote 3 (δ ≈ 16.3, margin ≈ −0.08, entropy ≈ 2.10; top probs 3=0.19, 4=0.18, 9=0.15).
+- `#296` digit 0 → vote 7 (δ ≈ 17.6, margin ≈ −0.35, entropy ≈ 1.83; top probs 7=0.38, 9=0.18, 4=0.16).
+- `#151` digit 9 → vote 6 (δ ≈ 17.3, margin ≈ −0.34, entropy ≈ 1.93; top probs 6=0.39, 5=0.12, 2=0.10).
+- `#708` digit 4 → vote 3 (δ ≈ 16.3, margin ≈ −0.08, entropy ≈ 2.10; top probs 3=0.19, 4=0.18, 9=0.15).
 
 - Archive these strokes for a “confusing digits” gallery or curation playbook.
 
 <center>
-    <img width="80%" src="figures/study3_edge_cases.png" style="width:100%; border:1px solid #ccc; margin-top:0.8em;" />
+    <img width="60%" src="figures/study3_edge_cases.png" style="width:100%; border:1px solid #ccc; margin-top:0.8em;" />
     <p style="font-size:75%; text-align:center;">Study III edge cases · IDs 296, 151, 708</p>
 <center>
 
@@ -738,15 +742,17 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # Cross-Study Snapshot
 
-| Study | Feature Backbone | Test Acc | δ negatively correlates with margin (Pearson) | δ positively correlates with entropy (Pearson) | θ σ | δ σ |
+| Study | Feature Backbone | Test Acc | δ negatively correlates with margin (Pearson) | δ positively correlates with entropy (Pearson) | Std(θ) | Std(δ) |
 |---|---|---|---|---|---|---|
 | Study I: CIFAR + PCA-128 | PCA-128 | 0.468 | −0.815 | 0.687 | 0.154 | 0.150 |
 | Study II: CIFAR + MobileNet | MobileNet-V3 (960-D) | 0.819 | −0.950 | 0.881 | 0.228 | 0.871 |
 | Study III: MNIST Mini | Raw pixels | 0.954 | −0.975 | 0.970 | 0.289 | 0.472 |
 
+- <small>*Std(θ) measures tree ability spread; Std(δ) measures item difficulty spread.*</small>
+
 - Across studies δ remains negatively correlated with margin and positively correlated with entropy: PCA lands near −0.82, MobileNet tightens to −0.95, and MNIST saturates the scale at −0.98.
-- θ spread remains compact (σθ ≈0.15–0.29) even with 2000 trees; MobileNet widens slightly as headroom grows.
-- Difficulty variance balloons on MobileNet (σδ ≈0.87) while MNIST stays moderate, underscoring how rich features surface nuanced “hard” digits.
+- θ spread remains compact (Std(θ) ≈ 0.15–0.29) even with 2000 trees; MobileNet widens slightly as headroom grows.
+- Difficulty variance balloons on MobileNet (Std(δ) ≈ 0.87) while MNIST stays moderate, underscoring how rich features surface nuanced “hard” digits.
 
 ---
 
@@ -765,7 +771,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # 2PL Discrimination Baseline (CIFAR + PCA)
 
-- 800-epoch 2PL fit (lr 0.02) yields mean 𝑎 ≈ **0.35** with σ ≈ **0.10** (range 0.07–0.71).
+- 800-epoch 2PL fit (lr 0.02) yields mean 𝑎 ≈ **0.35** with std ≈ **0.10** (range 0.07–0.71).
 - 𝑎 tracks RF uncertainty tightly: Pearson correlation of 𝑎 with margin is **−0.83**, and with entropy is **0.63**.
 - High-discrimination tail isolates the cat/dog ambiguity previously flagged by δ alone.
 - Artifacts: `data/irt_parameters_2pl.npz`, `data/rf_irt_correlations_2pl.json`, `figures/2pl_*`, `figures/discrimination_hist.png`.
