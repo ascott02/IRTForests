@@ -114,8 +114,10 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
   </div>
   <div class="col" style="text-align:center;">
+  <center>
     <img src="figures/irt/rasch_curve.png" style="width:100%; border:1px solid #ccc;" />
     <p style="font-size:85%;">1PL logistic curves for items of varying difficulty</p>
+    </center>
   </div>
 </div>
 
@@ -672,10 +674,16 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 <div class="columns">
   <div class="col">
-    <img src="figures/mobilenet_2pl_discrimination_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+
+  <center>
+    <img width="85%" src="figures/mobilenet_2pl_discrimination_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+  </center>
   </div>
   <div class="col">
-    <img src="figures/mobilenet_2pl_discrimination_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+
+  <center>
+    <img width="85%" src="figures/mobilenet_2pl_discrimination_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+  </center>
   </div>
 </div>
 
@@ -691,10 +699,16 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 <div class="columns">
   <div class="col">
-    <img src="figures/mnist_2pl_discrimination_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+
+  <center>
+    <img width="85%" src="figures/mnist_2pl_discrimination_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+  </center>
   </div>
   <div class="col">
-    <img src="figures/mnist_2pl_discrimination_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+
+  <center>
+    <img width="85%" src="figures/mnist_2pl_discrimination_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+  </center>
   </div>
 </div>
 
@@ -718,10 +732,16 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 <div class="columns">
   <div class="col">
-    <img src="figures/mobilenet_tree_oob_accuracy_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+
+  <center>
+    <img width="85%" src="figures/mobilenet_tree_oob_accuracy_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+  </center>
   </div>
   <div class="col">
-    <img src="figures/pca_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+
+  <center>
+    <img width="85%" src="figures/pca_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+  </center>
   </div>
 </div>
 
