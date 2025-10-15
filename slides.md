@@ -802,7 +802,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 - Mean 𝑎 settles at **0.27 ± 0.15** with a modest tail (max ≈1.16).
 - 𝑎 correlates with margin at **−0.32** and with entropy at **+0.10**, keeping residual cat/dog confusion in focus while the easy cluster sharpens.
-- Hexbins reveal the rotated "U": steep slopes sit at both extremes (hard animals, ultra-easy scenes), while mid-margin items stay flat.
+- Discrimination concentrates in the tails: the easiest (high-margin, low-entropy) and hardest (low-margin, high-entropy) images keep higher 𝑎, while mid-uncertainty cases flatten out.
 - Artifacts: `data/mobilenet/irt_parameters_2pl.npz`, `data/mobilenet/rf_irt_correlations_2pl.json`, `figures/mobilenet_2pl_*`.
 
 <div class="columns">
@@ -820,7 +820,7 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
   </div>
 </div>
 
-- Even at 81% accuracy, the extreme animal band anchors the right branch of the "U" while cluttered backgrounds anchor the left.
+- Signal hides in the extremes: hard animal confusions and trivially easy scenes are what still separate trees, while average items contribute little discrimination.
 
 ---
 
