@@ -342,6 +342,38 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 ---
 
+# Study I Fit Checks & Edge Cases
+
+<div class="columns">
+  <div class="col">
+
+**Fit diagnostics**
+
+| Metric | Value |
+|---|---|
+| Item infit μ / p95 | 0.18 / 0.35 |
+| Item outfit μ / p95 | 0.18 / 0.34 |
+| Tree infit μ / p95 | 0.35 / 0.48 |
+| Tree outfit μ / p95 | 0.18 / 0.19 |
+
+- MSQs well below 1 show tree responses are steadier than a pure Rasch prior; |z| never exceeds 0.05.
+
+  </div>
+  <div class="col">
+
+**Edge cases worth a look**
+
+- `#118` airplane → deer votes (δ ≈ 13.4, margin ≈ −0.05, entropy ≈ 2.28).
+- `#1734` ship → cat/frog split (δ ≈ 13.2, margin ≈ −0.09, entropy ≈ 2.27).
+- `#1602` ship → dog/horse tie (δ ≈ 13.2, margin ≈ −0.11, entropy ≈ 2.22).
+
+- Each item sits below 9% tree accuracy—prime targets for relabeling or curated augmentations.
+
+  </div>
+</div>
+
+---
+
 # Section II · Feature-Rich CIFAR (MobileNet)
 
 - Hold the splits fixed to isolate feature gains.
@@ -481,6 +513,38 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 ---
 
+# Study II Fit Checks & Edge Cases
+
+<div class="columns">
+  <div class="col">
+
+**Fit diagnostics**
+
+| Metric | Value |
+|---|---|
+| Item infit μ / p95 | 0.27 / 0.37 |
+| Item outfit μ / p95 | 0.27 / 0.37 |
+| Tree infit μ / p95 | 0.29 / 0.31 |
+| Tree outfit μ / p95 | 0.27 / 0.29 |
+
+- Narrow MSQ spread (≤0.37) confirms MobileNet trees behave consistently; no misfit flags at |z| > 0.05.
+
+  </div>
+  <div class="col">
+
+**Edge cases worth a look**
+
+- `#1190` dog → frog votes (δ ≈ 15.4, margin ≈ −0.22, entropy ≈ 1.85; top probs frog 0.28, deer 0.27).
+- `#1196` dog → horse (δ ≈ 14.9, margin ≈ −0.38, entropy ≈ 1.31; horse 0.41, deer 0.41, bird 0.08).
+- `#95` airplane → bird (δ ≈ 14.8, margin ≈ −0.25, entropy ≈ 1.89; bird 0.32, deer 0.20, frog 0.17).
+
+- These persistent outliers survive the feature upgrade—queue them for image/label review next.
+
+  </div>
+</div>
+
+---
+
 
 # Section III · Control Study (MNIST)
 
@@ -616,6 +680,38 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 ---
 
+# Study III Fit Checks & Edge Cases
+
+<div class="columns">
+  <div class="col">
+
+**Fit diagnostics**
+
+| Metric | Value |
+|---|---|
+| Item infit μ / p95 | 0.23 / 0.38 |
+| Item outfit μ / p95 | 0.22 / 0.37 |
+| Tree infit μ / p95 | 0.30 / 0.32 |
+| Tree outfit μ / p95 | 0.22 / 0.25 |
+
+- Rasch residuals stay tight (|z| < 0.07), confirming the control study’s consistency.
+
+  </div>
+  <div class="col">
+
+**Edge cases worth a look**
+
+- `#296` digit 3 → vote 7 (δ ≈ 17.6, margin ≈ −0.35, entropy ≈ 1.83; top probs 7=0.38, 9=0.18, 4=0.16).
+- `#151` digit 1 → vote 6 (δ ≈ 17.3, margin ≈ −0.34, entropy ≈ 1.93; top probs 6=0.39, 5=0.12, 2=0.10).
+- `#708` digit 8 → vote 3 (δ ≈ 16.3, margin ≈ −0.08, entropy ≈ 2.10; top probs 3=0.19, 4=0.18, 9=0.15).
+
+- Archive these strokes for a “confusing digits” gallery or curation playbook.
+
+  </div>
+</div>
+
+---
+
 # Section IV · Cross-Study & Diagnostics
 
 - Compare backbones and datasets on a shared θ/δ scale.
@@ -634,6 +730,19 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 - Feature backbone still shapes δ alignment: PCA lands near −0.82, MobileNet tightens to −0.95, and MNIST saturates the scale at −0.98.
 - θ spread remains compact (σθ ≈0.15–0.29) even with 2000 trees; MobileNet widens slightly as headroom grows.
 - Difficulty variance balloons on MobileNet (σδ ≈0.87) while MNIST stays moderate, underscoring how rich features surface nuanced “hard” digits.
+
+---
+
+# Cross-Study Fit Snapshot
+
+| Study | Item infit μ / p95 | Item outfit μ / p95 | Tree infit μ / p95 | Tree outfit μ / p95 |
+|---|---|---|---|---|
+| CIFAR + PCA | 0.18 / 0.35 | 0.18 / 0.34 | 0.35 / 0.48 | 0.18 / 0.19 |
+| CIFAR + MobileNet | 0.27 / 0.37 | 0.27 / 0.37 | 0.29 / 0.31 | 0.27 / 0.29 |
+| MNIST mini | 0.23 / 0.38 | 0.22 / 0.37 | 0.30 / 0.32 | 0.22 / 0.25 |
+
+- All MSQs stay well below 1, indicating over-dispersed errors are rare and Rasch assumptions hold after 2000-tree scaling.
+- MobileNet’s slight lift in item MSQ reflects richer feature diversity, while MNIST keeps both item and tree fits exceptionally tight.
 
 ---
 
