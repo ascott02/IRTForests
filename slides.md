@@ -3,7 +3,6 @@
 marp: true
 theme: default
 paginate: true
-class: invert
 math: katex
 style: |
   section {
@@ -58,14 +57,14 @@ footer: ATS &copy; 2025
 
 - Background: IRT Background, RF Background
 - Pipeline: Datasets, embeddings, and response matrices powering the studies.
-- Case Studies: Baseline CIFAR (PCA), CIFAR (MobileNet), and MNIST.
-- Cross-study comparison, takeaways, and next steps.
+- Case Studies: Baseline CIFAR (PCA), CIFAR (MobileNet), and MNIST, RF and 1PLs.
+- Cross-study comparison, 2PLs, 3PL, takeaways, and next steps.
 
 ---
 
-# Why Item Response Theory (IRT)?
+# Item Response Theory (IRT) (Wilson, 2005)
 
-**Because performance != ability — but they’re related.**
+**Why? Because performance != ability — but they’re related.**
 
 
 - Classical Test Theory (CTT) tells us *how someone did on this test.*
@@ -85,9 +84,8 @@ footer: ATS &copy; 2025
 
 </center>
 
-> A joint calibration framework where ability and difficulty are inferred together, each defined only in relation to the other. It’s less like grading individuals and more like synchronizing clocks — each calibrated against the ensemble.
-
-
+> A joint calibration framework where ability and difficulty are inferred together, each defined only in relation to the other. 
+> It’s less like grading individuals and more like synchronizing clocks — each calibrated against the ensemble.
 
 ---
 
@@ -98,15 +96,15 @@ footer: ATS &copy; 2025
 
 ## **Core Terms**
 
-- Ability (θ): respondent skill; higher → higher success odds.
-- Difficulty (δ): item hardness; higher → harder even for strong respondents.
+- Ability (θ): respondent skill; higher → higher success odds (1PL).
+- Difficulty (δ): item hardness; higher → harder even for strong respondents (1PL).
 - Discrimination (𝑎): slope near δ (2PL).
-- Guessing (𝑐): floor for multiple-choice exams (rare here) (3PL).
+- Guessing (𝑐): floor for multiple-choice exams (3PL).
 
   </div>
   <div class="col">
 
-## **Translated to Tree Ensemble Analogy**
+## **Forest Analogy**
 
 - Respondents → decision trees on a shared test set.
 - Items → images; responses are binary (tree correct?).
@@ -124,6 +122,7 @@ footer: ATS &copy; 2025
 
 $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j)}}$$
 
+- The probability a respondent gets the item correct, given their ability, and the item's difficulty.
 - Single global slope keeps parameters on a shared logit scale.
 - θ − δ = 0 ⇒ 50% success; shifts left/right change odds.
 - Fisher information peaks where curves are steepest.
@@ -151,12 +150,11 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 ---
 
-# Random Forests — Many Noisy Trees, One Stable Voice
+# Random Forests — Many Noisy Trees, One Stable Voice (Breiman, 2001)
 
-A **Random Forest** grows lots of trees on **bootstrapped (OOB)** samples  
-and **random subsets of features** at each split.
+A **Random Forest** grows many trees on **bootstrapped (OOB)** samples and **random subsets of features** at each split.
 
-This randomness:
+The randomness:
 - decorrelates trees → lowers variance,  
 - lets each tree explore a different view of the data.
 
@@ -167,7 +165,10 @@ Final prediction = **majority vote** (classification) or **mean** (regression).
 
 - Trees are fragile storytellers; forests are resilient crowds.  
 - Margins and entropy tell you how loudly, and how harmoniously, that crowd speaks.
-- Combining both with δ surfaces mislabeled or OOD items and tracks curation gains.
+
+
+*Insight: Combining margin and entropy with δ surfaces mislabeled or OOD items and tracks curation gains.*
+
 
 ---
 
@@ -177,8 +178,7 @@ $$ \text{margin}(x_i) =
 P_{\text{correct}}(x_i)
 - \max_{j \neq \text{true}} P_j(x_i) $$
 
-The **margin** measures how far ahead the correct class is
-over its nearest competitor.
+The **margin** measures how far ahead the correct class is over its nearest competitor.
 
 - **High margin:** trees vote strongly for the right class → confident.  
 - **Low or negative margin:** trees disagree or favor another class → uncertain.  
@@ -315,7 +315,7 @@ The **entropy** measures how dispersed the votes are across classes.
   <div class="col">
 
 - Off-diagonal spikes (cat vs dog, bird vs airplane, horse vs deer) mirror high-δ items.
-- Ships/trucks stay >80% on-diagonal; the highlighted hotspots mark curation targets.
+- Ships and trucks still lead the diagonal (≈64% / 56% accuracy), yet well short of a clean block—further underscoring the curation need.
 
   </div>
 </div>
@@ -334,13 +334,13 @@ The **entropy** measures how dispersed the votes are across classes.
   <div class="col">
   <center>
   <img width="84%" src="figures/wright_map.png" style="width:95%; border:1px solid #ccc;" />
-  <p style="font-size:85%; text-align:center;">Wright map: θ around −4; δ spans roughly [−0.5, 0.6]</p>
+  <p style="font-size:85%; text-align:center;">Wright map: θ mean ≈ −11.0 (σ ≈ 0.56); δ mean ≈ 5.8 with a wide tail</p>
     </center>
   </div>
 </div>
 
-- θ spans roughly −4.7 to −3.7; a +0.2 shift in ability still separates stronger trees by ~3 pp.
-- δ clusters near zero but stretches past ±0.5, flagging the ambiguous animal images against a compressed ability band.
+- θ ranges from about −12.8 to −8.9 (mean ≈ −11.0 ± 0.56), so even small shifts separate stronger trees by a few percentage points.
+- δ centers near 5.8 but stretches from roughly −11.5 to 13.4, highlighting how ambiguous animal items sit far from the easy tail.
 
 ---
 
@@ -982,7 +982,6 @@ The **entropy** measures how dispersed the votes are across classes.
 
 # Next Steps
 
-- Fold discrimination stats into `reports/embedding_comparison.md` & deck tables for quick grabs.
 - Run stability sweeps (50/100 trees, alternate seeds) to quantify variance in 𝑎 and θ.
 - Decide whether 3PL merits extension to PCA/MNIST or documenting as MobileNet-only.
 - Finish item-tier overlays (high/medium/low 𝑎) and align them with the qualitative grids.
@@ -994,7 +993,7 @@ The **entropy** measures how dispersed the votes are across classes.
 <div class="columns">
   <div class="col">
 
-**Idea:** recursively split data to  increase *purity* of labels.  
+**Idea:** recursively split data to  increase *purity* of labels (Breiman et al., 1984).  
 
 Example:  
 > “PetalLength < 2.5?” → all *Setosa* left, others right.
@@ -1064,5 +1063,14 @@ Measures **chance of error** —  probability that two randomly drawn samples fr
 
 > Both peak when classes are perfectly mixed (p = 0.5).  
 > Gini is slightly flatter — faster to compute, less sensitive to extremes.
+
+
+---
+
+# References
+
+- Wilson, M. (2005). <em>Constructing Measures: An Item Response Modeling Approach</em>. Lawrence Erlbaum Associates.
+- Breiman, L., Friedman, J. H., Olshen, R. A., &amp; Stone, C. J. (1984). <em>Classification and Regression Trees</em>. Wadsworth.
+- Breiman, L. (2001). "Random Forests." <em>Machine Learning</em>, 45(1), 5–32.
 
 
