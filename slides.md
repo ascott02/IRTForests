@@ -919,7 +919,6 @@ The **entropy** measures how dispersed the votes are across classes.
 
 # Tree Attribute Correlations
 
-- `scripts/analyze_tree_attribute_correlations.py` merges depth/leaves/OOB stats with θ + discrimination aggregates.
 - MobileNet: Pearson corr. (leaf count, θ) **−0.78**; (OOB accuracy, θ) **+0.75**—shallow, accurate trees shine.
 - PCA baseline: Pearson corr. (leaf count, θ) **−0.20**; (OOB accuracy, θ) **+0.28**; MNIST shows similar leaf penalties (−0.47).
 
@@ -938,7 +937,6 @@ The **entropy** measures how dispersed the votes are across classes.
   </div>
 </div>
 
-- CSV/JSON exports: `data/*/tree_attributes_with_signals.csv`, `data/*/tree_attribute_correlations*.json`.
 
 ---
 
