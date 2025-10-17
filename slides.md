@@ -53,6 +53,17 @@ footer: ATS &copy; 2025, CC-BY 4.0
 
 ---
 
+
+# Motivation
+
+- Fascinated by **IRT** for its **interpretative power**  
+- Meaning emerges only through a **cohort** — interactions matter  
+- Reminds me of **ensemble methods**, esp. **Random Forests**  
+- Both derive insight from **collective behavior**  
+- **Hypothesis:** Random Forests ↔ IRT — shared latent structure
+
+---
+
 # Agenda
 
 - Background: IRT + RF primers
@@ -338,8 +349,8 @@ The **entropy** measures how dispersed the votes are across classes.
   </div>
   <div class="col">
 
-- δ > 0.4 maps to >80% tree error—mostly ambiguous animals—while δ < −0.3 becomes “free points.”
-- Pearson ≈ 0.87, Spearman ≈ 0.86: difficulty doubles as an error heat-map.
+- δ > 0.4 maps to >80% tree error—mostly ambiguous animals — while δ < −0.3 are trivally easy.
+- Pearson ≈ 0.87, Spearman ≈ 0.82: difficulty doubles as an error heat-map.
 
   </div>
 </div>
@@ -942,20 +953,27 @@ The **entropy** measures how dispersed the votes are across classes.
 - Pearson r (leaf count, θ): PCA **−0.27**, MobileNet **−0.73**, MNIST **−0.38** — pruning shallower trees boosts ability rankings.
 - Leaf count penalizes overfitting branches; MobileNet shows the steepest drop because high-quality features reward compact trees.
 
+<small>
 <div class="columns">
   <div class="col">
-    <p style="font-size:78%; text-align:center; margin-bottom:0.4em;">PCA · Leaf count vs θ (r = −0.27)</p>
-    <img src="figures/pca_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+
+<p style="font-size:78%; text-align:center; margin-bottom:0.4em;">PCA, Leaf count vs θ (r=−0.27)</p>
+<img src="figures/pca_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+
   </div>
   <div class="col">
-    <p style="font-size:78%; text-align:center; margin-bottom:0.4em;">MobileNet · Leaf count vs θ (r = −0.73)</p>
-    <img src="figures/mobilenet_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+
+<p style="font-size:78%; text-align:center; margin-bottom:0.4em;">MobileNet, Leaf count vs θ (r=−0.73)</p>
+<img src="figures/mobilenet_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
   </div>
   <div class="col">
-    <p style="font-size:78%; text-align:center; margin-bottom:0.4em;">MNIST · Leaf count vs θ (r = −0.38)</p>
-    <img src="figures/mnist_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+
+<p style="font-size:78%; text-align:center; margin-bottom:0.4em;">MNIST, Leaf count vs θ (r=−0.38)</p>
+<img src="figures/mnist_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+
   </div>
 </div>
+</small>
 
 
 ---
@@ -1201,9 +1219,9 @@ $$
 $$
 
 - Re-center ∑δ = 0 after each step.
-
 - After one iteration (rounded):
 
+<small>
 <center>
 
 | Parameter | Value |
@@ -1216,6 +1234,7 @@ $$
 | δ₃ |  +0.52 |
 
 </center>
+</small>
 
 ---
 
@@ -1252,6 +1271,8 @@ $$
 
 # From Rasch Estimation to Stochastic Variational Inference (SVI)
 
+<small>
+
 Both Rasch estimation and SVI **fit latent-variable models**, but they differ in *how* they estimate hidden parameters.
 
 | Aspect | Rasch (by hand) | Stochastic Variational Inference |
@@ -1264,5 +1285,7 @@ Both Rasch estimation and SVI **fit latent-variable models**, but they differ in
 
 > Rasch estimation is like hand-tuning a few dials until predicted counts match reality.  
 > SVI automates that process with noisy gradients — learning not just *where the dials land*, but *how uncertain we are about their true positions.*
+
+</small>
 
 
