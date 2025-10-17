@@ -3,7 +3,6 @@
 marp: true
 theme: default
 paginate: true
-class: invert
 math: katex
 style: |
   section {
@@ -976,6 +975,18 @@ The **entropy** measures how dispersed the votes are across classes.
 - Decide whether 3PL merits extension to PCA/MNIST or documenting as MobileNet-only.
 - Finish item-tier overlays (high/medium/low 𝑎) and align them with the qualitative grids.
 
+---
+
+# References
+
+- Wilson, M. (2005). <em>Constructing Measures: An Item Response Modeling Approach</em>. Lawrence Erlbaum Associates.
+- Breiman, L., Friedman, J. H., Olshen, R. A., &amp; Stone, C. J. (1984). <em>Classification and Regression Trees</em>. Wadsworth.
+- Breiman, L. (2001). "Random Forests." <em>Machine Learning</em>, 45(1), 5–32.
+
+---
+
+# Extra Material
+
 --- 
 
 # Decision Trees — From Data to Splits
@@ -1057,10 +1068,201 @@ Measures **chance of error** —  probability that two randomly drawn samples fr
 
 ---
 
-# References
+# Estimating θ and δ — A Toy Rasch Example Worked-Out
+<div class="columns">
+<div class="col">
 
-- Wilson, M. (2005). <em>Constructing Measures: An Item Response Modeling Approach</em>. Lawrence Erlbaum Associates.
-- Breiman, L., Friedman, J. H., Olshen, R. A., &amp; Stone, C. J. (1984). <em>Classification and Regression Trees</em>. Wadsworth.
-- Breiman, L. (2001). "Random Forests." <em>Machine Learning</em>, 45(1), 5–32.
+We’ll fit a **1-Parameter Logistic Model (Rasch Model)** to a tiny response matrix:
+
+<center>
+
+| Person | Item 1 | Item 2 | Item 3 | Total rᵢ |
+|:------:|:------:|:------:|:------:|:---------:|
+| **A** | 1 | 1 | 0 | 2 |
+| **B** | 1 | 0 | 0 | 1 |
+| **C** | 0 | 0 | 1 | 1 |
+
+</center>
+
+“1” = correct “0” = incorrect  
+Three people, three items — small enough to solve by hand.
+</div>
+
+<div class="col">
+
+**The Rasch Model**:
+For each person *i* and item *j*:
+
+$$ P(X_{ij}=1|\theta_i,\delta_j)= \frac{1}{1+\exp[-(\theta_i-\delta_j)]} $$
+
+- $(\theta_i)$: person’s latent **ability**  
+- $(\delta_j)$: item’s **difficulty**  
+
+When $(\theta_i = \delta_j)$, $(P(X_{ij}=1)=0.5)$ — equal odds of success and failure.
+
+</div>
+</div>
+
+
+---
+
+# Step 1 — Initial Estimates
+
+<div class="columns">
+<div class="col">
+
+A simple starting point uses **logits of proportions**:
+
+$$
+\theta_i^{(0)} = \log\!\frac{r_i/m}{1-r_i/m}, \qquad
+\delta_j^{(0)} = -\log\!\frac{s_j/n}{1-s_j/n}
+$$
+
+where  
+- $( m=3 )$ items per person  
+- $( n=3 )$ people per item  
+- $( r_i )$ : person totals $( s_j )$: item totals  
+
+</div>
+
+<div class="col">
+
+Compute:
+
+<center>
+
+<div class="col">
+
+|        | Formula | Value |
+|:-------|:---------|:------|
+| Resp_A | logit(2/3) |  +0.693 |
+| Resp_B | logit(1/3) |  –0.693 |
+| Resp_C | logit(1/3) |  –0.693 |
+
+</div>
+
+<div class="col">
+
+
+|        | Formula | Value |
+|:-------|:---------|:------|
+| Item 1 | –logit(2/3) |  –0.693 |
+| Item 2 | –logit(1/3) |  +0.693 |
+| Item 3 | –logit(1/3) |  +0.693 |
+
+</div>
+
+</center>
+
+Center the item difficulties so ∑δ = 0.
+</div>
+</div>
+
+---
+
+# Step 2 — Compute Expected Scores
+
+- Plug into the Rasch model:
+
+$$
+P_{ij} = \frac{1}{1+e^{-(\theta_i-\delta_j)}}
+$$
+
+- Sum across items → expected totals per person.
+
+<center>
+
+| Person | Expected rᵢ | Observed rᵢ |
+|:------:|:-------------:|:-------------:|
+| A | 1.95 | 2 |
+| B | 1.04 | 1 |
+| C | 1.04 | 1 |
+
+</center>
+
+- Pretty close already — the model almost reproduces the data.
+
+---
+
+# Step 3 — One Newton Update (By Hand)
+
+- Adjust each parameter so model-predicted totals match observed totals:
+
+$$
+\theta_i \leftarrow \theta_i +
+\frac{r_i-\sum_j P_{ij}}
+     {\sum_j P_{ij}(1-P_{ij})}
+$$
+
+$$
+\delta_j \leftarrow \delta_j -
+\frac{s_j-\sum_i P_{ij}}
+     {\sum_i P_{ij}(1-P_{ij})}
+$$
+
+- Re-center ∑δ = 0 after each step.
+
+- After one iteration (rounded):
+
+<center>
+
+| Parameter | Value |
+|------------|-------|
+| θₐ |  +0.77 |
+| θᵦ |  –0.75 |
+| θ𝑐 |  –0.75 |
+| δ₁ |  –1.04 |
+| δ₂ |  +0.52 |
+| δ₃ |  +0.52 |
+
+</center>
+
+---
+
+# Step 4 — Check Fit
+
+- Recompute expectations:
+
+<center>
+
+| Person | Expected rᵢ | Observed rᵢ |
+|:------:|:-------------:|:-------------:|
+| A | 1.99 | 2 |
+| B | 1.01 | 1 |
+| C | 1.01 | 1 |
+
+</center>
+
+- Perfect alignment — the model now fits.
+
+---
+
+# What We Learned
+
+- \( r_i \) (person totals) are **sufficient** for estimating θ.  
+- \( s_j \) (item totals) are **sufficient** for estimating δ.  
+- Centering fixes the arbitrary origin of the latent scale.  
+- Precision varies by level: extreme scores → higher uncertainty.
+
+> In the Rasch world, **abilities and difficulties calibrate each other** —  
+> each θ and δ defined only in relation to the ensemble.
+
+
+---
+
+# From Rasch Estimation to Stochastic Variational Inference (SVI)
+
+Both Rasch estimation and SVI **fit latent-variable models**, but they differ in *how* they estimate hidden parameters.
+
+| Aspect | Rasch (by hand) | Stochastic Variational Inference |
+|:-------|:----------------|:--------------------------------|
+| **Goal** | Find point estimates of θ and δ that best reproduce observed responses. | Approximate full posterior distributions over latent variables. |
+| **Computation** | Deterministic updates (e.g., Newton–Raphson). | Stochastic gradient ascent on an *evidence lower bound* (ELBO). |
+| **Uncertainty** | Single best estimate per parameter. | Explicitly models uncertainty via variational distributions \( q(\theta,\delta) \). |
+| **Scale** | Works for small datasets, exact likelihood. | Scales to millions of observations using minibatches. |
+| **Analogy** | Matching observed vs. expected totals until equilibrium. | Minimizing the KL divergence between approximate and true posteriors. |
+
+> Rasch estimation is like hand-tuning a few dials until predicted counts match reality.  
+> SVI automates that process with noisy gradients — learning not just *where the dials land*, but *how uncertain we are about their true positions.*
 
 
