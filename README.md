@@ -1,4 +1,5 @@
-# Random Forest × Item Response Theory (IRT)
+
+# Item Response Theory (IRT) + Random Forests
 
 **Goal:** Build a small, reproducible study that links *Random Forest (RF)* behavior to *Item Response Theory (IRT)*. We’ll treat **trees as respondents** and **examples as items** to see whether IRT surfaces difficulty/ability signals that complement RF feature importance. Designed to run on **one CPU/GPU** (or none) and to produce a **slides.md** deck for a short talk.
 
@@ -269,3 +270,9 @@ marp-cli  # optional for slide rendering
 ## Next Edit Cycle
 
 Focus shifts to discrimination analysis: implement 2PL fits, extend correlation tooling, and feed condensed takeaways back into `slides.md` and the reports set. Notebook automation should follow once the new experiments stabilize.
+
+---
+
+## License
+
+All original content in this repository is shared under the [Creative Commons Attribution 4.0 International License](LICENSE). Please credit "Item Response Theory (IRT) + Random Forests" when reusing or adapting materials.

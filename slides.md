@@ -3,6 +3,7 @@
 marp: true
 theme: default
 paginate: true
+class: invert
 math: katex
 style: |
   section {
@@ -35,7 +36,7 @@ style: |
   img {
     border-radius: .2em;
   }
-footer: ATS &copy; 2025
+footer: ATS &copy; 2025, CC-BY 4.0
 ---
 
 # IRTForests 
