@@ -210,6 +210,9 @@ The **entropy** measures how dispersed the votes are across classes.
 - Commit, push, rinse, and repeat...
 - <a href="https://github.com/ascott02/IRTForests">github.com/ascott02/IRTForests</a>
 
+> Plastic tubes and pots and pans
+> Bits and pieces and the magic from the hand - Oingo Boingo, "Weird Science" 1985
+
 ---
 
 
@@ -218,28 +221,32 @@ The **entropy** measures how dispersed the votes are across classes.
 <div class="columns">
   <div class="col">
 
-**Data Preperation**
+**Data Preperation for 3 Experiements**
 
-- Stratified CIFAR-10 subset: 10k / 2k / 2k splits.
-- Resize 64×64, normalize, PCA → 128-D embeddings, and MobileNet-V3 embeddings.
-- MNIST mini: 4k / 800 / 800 digits, normalized 28×28 grayscale.
+1. Stratified CIFAR-10 subset: 10k / 2k / 2k splits. Resize 64×64, normalize, PCA → 128-D embeddings.
+2. Stratified CIFAR-10 subset: 10k / 2k / 2k splits. Resize 64×64, normalize, MobileNet → 960-D embeddings.
+3. MNIST mini: 4k / 800 / 800 digits, normalized 28×28 grayscale. Raw pixels.
 
 **Random Foreset Training**
 
 - RF (2000 trees) trained for every study; metrics and importances saved.
-- Response matrices persisted: CIFAR `(2000 × 2000)` for PCA & MobileNet, MNIST `(2000 × 800)`.
-- 1PL Rasch (SVI, 600 epochs) complete for CIFAR; MNIST mirrors the same notebook.
+- Response matrices saved: CIFAR `(2000 × 2000)` for PCA & MobileNet, MNIST `(2000 × 800)`.
+
+**IRT Analsysis**
+- 1PL Rasch (SVI, 600 epochs) complete for CIFAR+PCA, CIFAR+MobileNet, and MNIST.
+- 2PL (SVI, 800 epochs) complete for CIFAR+PCA, CIFAR+MobileNet, and MNIST.
+- 3PL (SVI, 1000 epochs) CIFAR MobileNet only.
 
   </div>
 </div>
 
 ---
 
-# Dataset Overview
+# Datasets Overview
 
 | Dataset | Train | Val | Test | Feature Pipeline | Notes |
 |---|---|---|---|---|---|
-| CIFAR-10 subset | 10,000 | 2,000 | 2,000 | 64×64 RGB → PCA-128 / MobileNet-V3 (960-D) | Shared splits across Study I & II |
+| CIFAR-10 subset | 10,000 | 2,000 | 2,000 | PCA-128 / MobileNet-V3 (960-D) | Shared splits Study I & II |
 | MNIST mini | 4,000 | 800 | 800 | 28×28 grayscale → raw pixels (no PCA) | Control for clean handwriting |
 
 - CIFAR runs differ only by embeddings; labels and splits stay fixed.
@@ -247,35 +254,28 @@ The **entropy** measures how dispersed the votes are across classes.
 
 ---
 
-# Section I · Baseline Study (CIFAR + PCA)
-
-- Establish the PCA baseline and its uncertainty signals.
-- Use IRT to pinpoint weak trees and hard items that motivate stronger features.
-
----
-
-# Study I: CIFAR-10 + PCA-128 Embeddings
-
-- Baseline vision setup: 64×64 resize + PCA to 128 dims.
-- 2000-tree Random Forest with a 2000 × 2000 response matrix anchors the diagnostics.
-- Use this run to surface weak trees and mislabeled items.
-
----
 
 # Study I Setup: CIFAR-10 + PCA-128
 
 <div class="columns">
   <div class="col">
     <ul>
-  <li>Fixed stratified CIFAR-10 split (10k / 2k / 2k).</li>
-  <li>Resize 64×64, normalize, PCA → 128-D embeddings (`data/cifar10_embeddings.npz`).</li>
-  <li>Response matrix 2000 × 2000 with mean tree accuracy 0.176.</li>
-  <li>Artifacts: metrics, margins, entropy, IRT outputs under `data/` and `figures/`.</li>
+  <li>Establish the PCA baseline and its uncertainty signals.</li>
+  <li>Use IRT to pinpoint weak trees and hard items that motivate stronger features.</li>
+  <li>Fixed stratified CIFAR-10 split (10k/2k/2k).</li>
+  <li>Resize 64×64, normalize, PCA → 128-D embeddings.</li>
+  <li>Train and test 2000 trees.
+  <li>Response matrix 2000 × 2000 with mean tree accuracy.</li>
+  <li>Artifacts: Metrics, Margins, Entropy, IRT outputs.</li>
     </ul>
   </div>
+
   <div class="col">
-    <img src="figures/datasets/study1_cifar_samples.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%; text-align:center;">Study I sample grid — stratified CIFAR-10 slices</p>
+  <center>
+
+<img width="85%" src="figures/datasets/study1_cifar_samples.png" style="width:100%; border:1px solid #ccc;" />
+<p style="font-size:85%; text-align:center;">Study I sample grid — stratified CIFAR-10 slices</p>
+    </center>
   </div>
 </div>
 
@@ -283,7 +283,7 @@ The **entropy** measures how dispersed the votes are across classes.
 
 # Study I Performance (PCA-128)
 
-<small>
+<center>
 
 | Metric | Value |
 |---|---|
@@ -294,11 +294,10 @@ The **entropy** measures how dispersed the votes are across classes.
 | δ negatively correlates with margin (Pearson) | −0.815 |
 | δ positively correlates with entropy (Pearson) | 0.687 |
 
-</small>
+</center>
 
 - Baseline ensemble still underperforms due to weak PCA features yet preserves δ alignment.
 - Margins hover near zero (mean ≈0.006) and entropy stays high (2.17), signalling broad disagreement—prime for IRT.
-- Artifacts: metrics (`data/rf_metrics.json`), confusion (`data/rf_confusion.npy`), importances, permutations.
 
 ---
 
@@ -309,8 +308,6 @@ The **entropy** measures how dispersed the votes are across classes.
     <img src="figures/rf_confusion_matrix.png" style="width:95%; border:1px solid #ccc;" />
   </div>
   <div class="col">
-
-**Reading the matrix**
 
 - Off-diagonal spikes (cat vs dog, bird vs airplane, horse vs deer) mirror high-δ items.
 - Ships/trucks stay >80% on-diagonal; the highlighted hotspots mark curation targets.
@@ -828,32 +825,26 @@ The **entropy** measures how dispersed the votes are across classes.
 
 ---
 
-# 2PL Discrimination Baseline (CIFAR + PCA)
+# 2PL Discrimination (CIFAR + PCA)
 
-- 800-epoch 2PL fit (lr 0.02) yields mean 𝑎 ≈ **0.35** with std ≈ **0.10** (range 0.07–0.71).
-- 𝑎 tracks RF uncertainty tightly: Pearson correlation of 𝑎 with margin is **−0.83**, and with entropy is **0.63**.
-- High-discrimination tail isolates the cat/dog ambiguity previously flagged by δ alone.
-- Artifacts: `data/irt_parameters_2pl.npz`, `data/rf_irt_correlations_2pl.json`, `figures/2pl_*`, `figures/discrimination_hist.png`.
-
----
-
-# 2PL Diagnostics
+- 800-epoch 2PL fit (lr 0.02) yields mean 𝑎 ≈ **0.35 ± 0.10** (range 0.07–0.71).
+- 𝑎 correlates with margin at **−0.83** and with entropy at **+0.63**, aligning slope with RF uncertainty signals.
+- Discrimination peaks on the low-margin, high-entropy animal items and steadily tapers for easier scenes, leaving high-margin images with softer slopes.
 
 <div class="columns">
   <div class="col">
 
-![2PL discrimination vs margin](figures/2pl_discrimination_vs_margin.png)
-
+  <center>
+    <img width="85%" src="figures/2pl_discrimination_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+  </center>
   </div>
   <div class="col">
 
-![Discrimination histogram](figures/discrimination_hist.png)
-
+  <center>
+    <img width="85%" src="figures/2pl_discrimination_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+  </center>
   </div>
 </div>
-
-- High-𝑎 items carry persistently low margins; easy items cluster at high confidence.
-- Slope distribution tightens around 0.3, signalling that only a narrow band of items sharply separates trees.
 
 ---
 
@@ -861,21 +852,19 @@ The **entropy** measures how dispersed the votes are across classes.
 
 - Mean 𝑎 settles at **0.27 ± 0.15** with a modest tail (max ≈1.16).
 - 𝑎 correlates with margin at **−0.32** and with entropy at **+0.10**, keeping residual cat/dog confusion in focus while the easy cluster sharpens.
-- Discrimination concentrates in the tails: the easiest (high-margin, low-entropy) and hardest (low-margin, high-entropy) images keep higher 𝑎, while mid-uncertainty cases flatten out.
-- Signal hides in the extremes: hard animal confusions and trivially easy scenes are what still separate trees, while average items contribute little discrimination.
-- Artifacts: `data/mobilenet/irt_parameters_2pl.npz`, `data/mobilenet/rf_irt_correlations_2pl.json`, `figures/mobilenet_2pl_*`.
+- Discrimination concentrates in the tails: hard animal confusions and trivially easy scenes separate trees, while mid-uncertainty items contribute little.
 
 <div class="columns">
   <div class="col">
 
   <center>
-    <img width="75%" src="figures/mobilenet_2pl_discrimination_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+    <img width="85%" src="figures/mobilenet_2pl_discrimination_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
   </center>
   </div>
   <div class="col">
 
   <center>
-    <img width="75%" src="figures/mobilenet_2pl_discrimination_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+    <img width="85%" src="figures/mobilenet_2pl_discrimination_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
   </center>
   </div>
 </div>
@@ -885,9 +874,9 @@ The **entropy** measures how dispersed the votes are across classes.
 
 # 2PL Discrimination (MNIST)
 
-- Mean 𝑎 lifts to **0.24 ± 0.16** because only a few digits truly separate trees.
+- Mean 𝑎 lifts to **0.33 ± 0.25**, so only a modest slice of digits remains truly separating despite the high accuracy ceiling.
 - 𝑎 correlates with margin at **+0.89** while its correlation with entropy flips to **−0.96**—uncertainty vanishes outside the awkward strokes.
-- Artifacts: `data/mnist/irt_parameters_2pl.npz`, `data/mnist/rf_irt_correlations_2pl.json`, `figures/mnist_2pl_*`.
+- Discrimination climbs with margin and falls with entropy: crisp, easy digits carry the steepest slopes while ambiguous stroke collisions stay much flatter.
 
 <div class="columns">
   <div class="col">
@@ -903,8 +892,6 @@ The **entropy** measures how dispersed the votes are across classes.
   </center>
   </div>
 </div>
-
-- High-𝑎 digits align with the stroke collisions spotted earlier (3 vs 5, 4 vs 9).
 
 ---
 
