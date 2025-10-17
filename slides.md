@@ -244,27 +244,32 @@ The **entropy** measures how dispersed the votes are across classes.
 
 # Datasets Overview
 
+<center>
+
 | Dataset | Train | Val | Test | Feature Pipeline | Notes |
 |---|---|---|---|---|---|
 | CIFAR-10 subset | 10,000 | 2,000 | 2,000 | PCA-128 / MobileNet-V3 (960-D) | Shared splits Study I & II |
 | MNIST mini | 4,000 | 800 | 800 | 28×28 grayscale → raw pixels (no PCA) | Control for clean handwriting |
+</center>
 
 - CIFAR runs differ only by embeddings; labels and splits stay fixed.
 - MNIST mirrors the workflow to confirm signals on cleaner data.
 
 ---
 
+# Study I: CIFAR-10 + PCA-128 Embeddings
+
+---
 
 # Study I Setup: CIFAR-10 + PCA-128
 
 <div class="columns">
   <div class="col">
     <ul>
-  <li>Establish the PCA baseline and its uncertainty signals.</li>
+  <li>Establish the PCA baseline and RF uncertainty signals.</li>
   <li>Use IRT to pinpoint weak trees and hard items that motivate stronger features.</li>
   <li>Fixed stratified CIFAR-10 split (10k/2k/2k).</li>
-  <li>Resize 64×64, normalize, PCA → 128-D embeddings.</li>
-  <li>Train and test 2000 trees.
+  <li>Train, and test 2000 trees
   <li>Response matrix 2000 × 2000 with mean tree accuracy.</li>
   <li>Artifacts: Metrics, Margins, Entropy, IRT outputs.</li>
     </ul>
@@ -397,13 +402,6 @@ The **entropy** measures how dispersed the votes are across classes.
 
 ---
 
-# Study I Takeaways
-
-- Weak PCA features create long tails in both ability (θ) and difficulty (δ), exposing erratic trees.
-- Margin and entropy correlate with δ, but clusters of high-difficulty animals persist across diagnostics.
-- Visual inspection confirms mislabeled or low-signal items driving high δ, motivating feature upgrades.
-
----
 
 # Study I Fit Checks & Edge Cases
 
@@ -412,12 +410,15 @@ The **entropy** measures how dispersed the votes are across classes.
 
 **Fit diagnostics**
 
+<center>
+
 | Metric | Value |
 |---|---|
 | Item infit μ / p95 | 0.18 / 0.35 |
 | Item outfit μ / p95 | 0.18 / 0.34 |
 | Tree infit μ / p95 | 0.35 / 0.48 |
 | Tree outfit μ / p95 | 0.18 / 0.19 |
+</center>
 
 - MSQs well below 1 show tree responses are steadier than a pure Rasch prior; |z| never exceeds 0.05.
 
@@ -442,17 +443,16 @@ The **entropy** measures how dispersed the votes are across classes.
 
 ---
 
-# Section II · Feature-Rich CIFAR (MobileNet)
+# Study I Takeaways
 
-- Hold the splits fixed to isolate feature gains.
-- Test whether richer embeddings tighten θ spread and retain δ alignment.
+- Weak PCA features create long tails in both ability (θ) and difficulty (δ), exposing erratic trees.
+- Margin and entropy correlate with δ, but clusters of high-difficulty animals persist across diagnostics.
+- Visual inspection confirms mislabeled or low-signal items driving high δ, motivating feature upgrades.
 
 ---
 
 # Study II: CIFAR-10 + MobileNet Embeddings
 
-- Swap PCA features for MobileNet-V3 (960-D) while keeping tree count and splits constant.
-- Compare RF metrics, uncertainty signals, and IRT parameters against the baseline.
 
 ---
 
@@ -460,12 +460,12 @@ The **entropy** measures how dispersed the votes are across classes.
 
 <div class="columns">
   <div class="col">
-    <ul>
-  <li>Reuse Study I splits to isolate feature effects.</li>
-  <li>Extract 960-D MobileNet-V3 Small embeddings (`data/cifar10_mobilenet_embeddings.npz`).</li>
-  <li>Response matrix 2000 × 2000 with mean tree accuracy 0.479.</li>
-  <li>Artifacts live under `data/mobilenet/*` and `figures/mobilenet/`.</li>
-    </ul>
+
+- Hold the splits fixed to isolate feature gains.
+- Swap PCA features for MobileNet-V3 (960-D) while keeping tree count and splits constant.
+- Test whether richer embeddings tighten θ spread and retain δ alignment.
+- Compare RF metrics, uncertainty signals, and IRT parameters against the baseline.
+
   </div>
   <div class="col">
     <img src="figures/datasets/study2_cifar_samples.png" style="width:100%; border:1px solid #ccc;" />
@@ -477,6 +477,8 @@ The **entropy** measures how dispersed the votes are across classes.
 
 # Study II Performance (MobileNet-V3)
 
+<center>
+
 | Metric | Value |
 |---|---|
 | Test / Val / OOB acc | 0.819 / 0.820 / 0.812 |
@@ -485,6 +487,7 @@ The **entropy** measures how dispersed the votes are across classes.
 | Mean margin / entropy | 0.2806 / 1.4929 |
 | δ negatively correlates with margin (Pearson) | −0.950 |
 | δ positively correlates with entropy (Pearson) | 0.881 |
+</center>
 
 - Pretrained features boost accuracy by 35 pp while strengthening δ correlations.
 - Higher margins and lower entropy show confidence gains except on stubborn animal classes.
@@ -573,14 +576,6 @@ The **entropy** measures how dispersed the votes are across classes.
 
 ---
 
-# Study II Takeaways
-
-- MobileNet embeddings add 35 pp of accuracy while maintaining a focused ability band (Std(θ) ≈ 0.23).
-- δ stays aligned with RF uncertainty, isolating a smaller yet stubborn ambiguous cluster.
-- Residual cat/dog confusion points to data curation as the next lever.
-
----
-
 # Study II Fit Checks & Edge Cases
 
 <div class="columns">
@@ -588,12 +583,15 @@ The **entropy** measures how dispersed the votes are across classes.
 
 **Fit diagnostics**
 
+<center>
+
 | Metric | Value |
 |---|---|
 | Item infit μ / p95 | 0.27 / 0.37 |
 | Item outfit μ / p95 | 0.27 / 0.37 |
 | Tree infit μ / p95 | 0.29 / 0.31 |
 | Tree outfit μ / p95 | 0.27 / 0.29 |
+</center>
 
 - Narrow MSQ spread (≤0.37) confirms MobileNet trees behave consistently; no misfit flags at |z| > 0.05.
 
@@ -617,18 +615,15 @@ The **entropy** measures how dispersed the votes are across classes.
 
 ---
 
+# Study II Takeaways
 
-# Section III · Control Study (MNIST)
-
-- Probe the pipeline on a high-signal, low-noise dataset.
-- Confirm that IRT still mirrors RF uncertainty when accuracy is near perfect.
+- MobileNet embeddings add 35 pp of accuracy while maintaining a focused ability band (Std(θ) ≈ 0.23).
+- δ stays aligned with RF uncertainty, isolating a smaller yet stubborn ambiguous cluster.
+- Residual cat/dog confusion points to data curation as the next lever.
 
 ---
 
-# Study III: MNIST Mini-Study
-
-- Lightweight handwriting dataset to validate RF × IRT beyond CIFAR-10.
-- Acts as a control where ambiguity is rare yet still detectable.
+# Section III · Control Study (MNIST)
 
 ---
 
@@ -636,22 +631,30 @@ The **entropy** measures how dispersed the votes are across classes.
 
 <div class="columns">
   <div class="col">
-    <ul>
-  <li>Split 4k / 800 / 800 digits with stratified sampling and a fixed seed.</li>
-  <li>Flatten 28×28 grayscale digits; no augmentation.</li>
-  <li>Train a 2000-tree RF on raw pixels; response matrix 2000 × 800.</li>
-  <li>Artifacts land in `data/mnist/` with plots in `figures/mnist/`.</li>
-    </ul>
+
+ - Probe the pipeline on a high-signal, low-noise dataset.
+- Lightweight handwriting dataset to validate RF × IRT beyond CIFAR-10.
+- Confirm that IRT still mirrors RF uncertainty when accuracy is near perfect.
+- Acts as a control where ambiguity is rare yet still detectable.
+
+ 
+
   </div>
   <div class="col">
-    <img src="figures/datasets/mnist_samples.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%; text-align:center;">Study III sample grid — curated MNIST mini split</p>
+
+  <center>
+
+<img src="figures/datasets/mnist_samples.png" style="width:100%; border:1px solid #ccc;" />
+<p style="font-size:85%; text-align:center;">Study III sample grid — curated MNIST mini split</p>
+    </center>
   </div>
 </div>
 
 ---
 
 # Study III Performance (MNIST)
+
+<center>
 
 | Metric | Value |
 |---|---|
@@ -662,6 +665,7 @@ The **entropy** measures how dispersed the votes are across classes.
 | δ positively correlates with entropy (Pearson) | 0.970 |
 | θ mean ± std | 3.04 ± 0.29 |
 | δ mean ± std | −0.13 ± 0.47 |
+</center>
 
 - Ambiguous digits (e.g., brushed 5 vs 6) still spike δ toward the positive tail; elsewhere the forest is decisive.
 - Low entropy + high margin line up with low δ, giving a “sanity benchmark” beyond CIFAR.
@@ -745,13 +749,6 @@ The **entropy** measures how dispersed the votes are across classes.
 
 ---
 
-# Study III Takeaways
-
-- δ and RF uncertainty agree almost perfectly, while θ stays high yet still flags the rare ambiguous strokes.
-- The control study confirms the RF × IRT pipeline holds outside noisy vision data.
-
----
-
 # Study III Fit Checks & Edge Cases
 
 <div class="columns">
@@ -792,6 +789,13 @@ The **entropy** measures how dispersed the votes are across classes.
 
 ---
 
+# Study III Takeaways
+
+- δ and RF uncertainty agree almost perfectly, while θ stays high yet still flags the rare ambiguous strokes.
+- The control study confirms the RF × IRT pipeline holds outside noisy vision data.
+
+---
+
 # Section IV · Cross-Study & Diagnostics
 
 - Compare backbones and datasets on a shared θ/δ scale.
@@ -817,11 +821,15 @@ The **entropy** measures how dispersed the votes are across classes.
 
 # Cross-Study Fit Snapshot
 
+<center>
+
 | Study | Item infit μ / p95 | Item outfit μ / p95 | Tree infit μ / p95 | Tree outfit μ / p95 |
 |---|---|---|---|---|
 | CIFAR + PCA | 0.18 / 0.35 | 0.18 / 0.34 | 0.35 / 0.48 | 0.18 / 0.19 |
 | CIFAR + MobileNet | 0.27 / 0.37 | 0.27 / 0.37 | 0.29 / 0.31 | 0.27 / 0.29 |
 | MNIST mini | 0.23 / 0.38 | 0.22 / 0.37 | 0.30 / 0.32 | 0.22 / 0.25 |
+
+</center>
 
 - All MSQs stay well below 1, indicating over-dispersed errors are rare and Rasch assumptions hold after 2000-tree scaling.
 - MobileNet’s slight lift in item MSQ reflects richer feature diversity, while MNIST keeps both item and tree fits exceptionally tight.
@@ -917,23 +925,46 @@ The **entropy** measures how dispersed the votes are across classes.
 
 ---
 
-# Tree Attribute Correlations
+# Tree Attribute Correlations · OOB Accuracy vs θ
 
-- MobileNet: Pearson corr. (leaf count, θ) **−0.78**; (OOB accuracy, θ) **+0.75**—shallow, accurate trees shine.
-- PCA baseline: Pearson corr. (leaf count, θ) **−0.20**; (OOB accuracy, θ) **+0.28**; MNIST shows similar leaf penalties (−0.47).
+- `scripts/analyze_tree_attribute_correlations.py` merges each tree’s depth/leaves/OOB stats with θ and discrimination aggregates.
+- Pearson r (OOB accuracy, θ): PCA **+0.25**, MobileNet **+0.70**, MNIST **+0.39** — reliable trees earn higher ability across every study.
+- CSV/JSON exports: `data/*/tree_attributes_with_signals.csv`, `data/*/tree_attribute_correlations*.json` for deeper dives.
 
 <div class="columns">
   <div class="col">
-
-  <center>
-    <img width="85%" src="figures/mobilenet_tree_oob_accuracy_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
-  </center>
+    <p style="font-size:78%; text-align:center; margin-bottom:0.4em;">PCA · OOB accuracy vs θ (r = +0.25)</p>
+    <img src="figures/pca_tree_oob_accuracy_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
   </div>
   <div class="col">
+    <p style="font-size:78%; text-align:center; margin-bottom:0.4em;">MobileNet · OOB acc vs θ (r = +0.70)</p>
+    <img src="figures/mobilenet_tree_oob_accuracy_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+  </div>
+  <div class="col">
+    <p style="font-size:78%; text-align:center; margin-bottom:0.4em;">MNIST · OOB accuracy vs θ (r = +0.39)</p>
+    <img src="figures/mnist_tree_oob_accuracy_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+  </div>
+</div>
 
-  <center>
-    <img width="85%" src="figures/pca_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
-  </center>
+---
+
+# Tree Attribute Correlations · Leaf Count vs θ
+
+- Pearson r (leaf count, θ): PCA **−0.27**, MobileNet **−0.73**, MNIST **−0.38** — pruning shallower trees boosts ability rankings.
+- Leaf count penalizes overfitting branches; MobileNet shows the steepest drop because high-quality features reward compact trees.
+
+<div class="columns">
+  <div class="col">
+    <p style="font-size:78%; text-align:center; margin-bottom:0.4em;">PCA · Leaf count vs θ (r = −0.27)</p>
+    <img src="figures/pca_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+  </div>
+  <div class="col">
+    <p style="font-size:78%; text-align:center; margin-bottom:0.4em;">MobileNet · Leaf count vs θ (r = −0.73)</p>
+    <img src="figures/mobilenet_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
+  </div>
+  <div class="col">
+    <p style="font-size:78%; text-align:center; margin-bottom:0.4em;">MNIST · Leaf count vs θ (r = −0.38)</p>
+    <img src="figures/mnist_tree_n_leaves_vs_theta.png" style="width:100%; border:1px solid #ccc;" />
   </div>
 </div>
 
