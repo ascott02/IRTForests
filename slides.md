@@ -790,17 +790,21 @@ The **entropy** measures how dispersed the votes are across classes.
 
 # Cross-Study Snapshot
 
+<small>
+
 | Study | Feature Backbone | Test Acc | δ negatively correlates with margin (Pearson) | δ positively correlates with entropy (Pearson) | Std(θ) | Std(δ) |
 |---|---|---|---|---|---|---|
 | Study I: CIFAR + PCA-128 | PCA-128 | 0.468 | −0.815 | 0.687 | 0.154 | 0.150 |
 | Study II: CIFAR + MobileNet | MobileNet-V3 (960-D) | 0.819 | −0.950 | 0.881 | 0.228 | 0.871 |
 | Study III: MNIST Mini | Raw pixels | 0.954 | −0.975 | 0.970 | 0.289 | 0.472 |
 
-- <small>*Std(θ) measures tree ability spread; Std(δ) measures item difficulty spread.*</small>
+</small>
 
+- <small>*Std(θ) measures tree ability spread; Std(δ) measures item difficulty spread.*
 - δ stays negative with margin and positive with entropy for every study (−0.82/−0.95/−0.98 vs +0.69/+0.88/+0.97).
 - θ spread remains compact (Std(θ) ≈ 0.15–0.29); MobileNet is only slightly wider as headroom grows.
 - Difficulty variance jumps on MobileNet (Std(δ) ≈ 0.87) while MNIST stays moderate, highlighting how rich features surface nuanced “hard” digits.
+</small>
 
 ---
 
