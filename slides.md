@@ -8,6 +8,12 @@ math: katex
 style: |
   section {
     font-size: 140%;
+    width: 1280px;
+    height: 720px;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: 100px;
+    padding-right: 100px;
   }
   ul {
     line-height: 1.2;
@@ -27,75 +33,80 @@ style: |
   .col {
     flex: 1;
   }
-footer: ATS&copy;2025
+  img {
+    border-radius: .2em;
+  }
+footer: ATS &copy; 2025
 ---
 
-# IRTForests
+# IRTForests 
 
-### Random Forest + Item Response Theory
-
-<p style="font-size:80%; margin-top:2.5em;">Andrew T. Scott · Fall 2025</p>
+<p style="font-size:80%; margin-top:2.5em;">Andrew T. Scott, Fall 2025</p>
 <p style="font-size:70%;"><a href="https://github.com/ascott02/IRTForests">github.com/ascott02/IRTForests</a></p>
 
 ---
 
-# Random Forest + Item Response Theory
+# Item Response Theory + Random Forests
 
 - Trees become respondents, images become items.
 - Response matrix records per-tree correctness on held-out examples.
-- Goal: explain RF behavior via IRT ability & difficulty signals.
+- Goal: explain RF behavior via IRT ability & difficulty signals and vice versa.
 
 ---
 
-# GenAI In the Loop Scientific Exploration
+# Agenda
 
-- Started from a focused README spec outlining goals, datasets, and diagnostics.
-- Automated notebook + CLI runs to regenerate every experiment end-to-end.
-- Promoted the resulting figures and tables into this deck, sharpening the story each loop.
-
----
-
-# Motivation & Guiding Questions
-
-- Random forests bundle weak learners; IRT recasts each tree as a respondent with latent ability (θ).
-- Held-out images become items whose difficulty (δ) emerges from tree wins and losses.
-- How do θ and δ steer backbone choices, surface label issues, and focus the next curation loop?
+- Background: IRT Background, RF Background
+- Pipeline: Datasets, embeddings, and response matrices powering the studies.
+- Case Studies: Baseline CIFAR (PCA), CIFAR (MobileNet), and MNIST.
+- Cross-study comparison, takeaways, and next steps.
 
 ---
 
-# Story Arc
+# Why Item Response Theory (IRT)?
 
-1. **Background:** IRT mechanics + RF diagnostics we rely on.
-2. **Pipeline:** Datasets, embeddings, and response matrices powering the studies.
-3. **Case Studies:** Baseline CIFAR, MobileNet upgrade, and MNIST control.
-4. **Synthesis:** Cross-study comparisons, takeaways, and next steps.
+**Because performance != ability — but they’re related.**
+
+
+- Classical Test Theory (CTT) tells us *how someone did on this test.*
+
+- IRT models *how someone would perform on any set of items that measure the same underlying ability*.
+
+- IRT doesn’t replace CTT, it generalizes it with **portable, interpretable measurements** of capability.
+
+<center>
+
+| CTT | IRT |
+|-----------------------|----------------------|
+| Measures perf. on specific test | Estimates underlying ability |
+| Test = sample of items | Items = samples from a calibrated continuum |
+| Precision assumed constant | Precision varies with ability |
+| Great for grading | Great for understanding and interpretability |
+
+</center>
+
+> A joint calibration framework where ability and difficulty are inferred together, each defined only in relation to the other. It’s less like grading individuals and more like synchronizing clocks — each calibrated against the ensemble.
+
+
 
 ---
 
-# Why Item Response Theory for Random Forests?
-
-- Trees answer the same held-out images, so treat them as “test takers.”
-- Latent **ability** (θ) ranks trees; latent **difficulty** (δ) flags ambiguous images.
-- Shared scales let us compare studies, backbones, and curation tactics directly.
-
----
 
 # Item Response Theory Building Blocks
 
-<div class="columns">
   <div class="col">
 
-**Core Terms**
+## **Core Terms**
 
 - Ability (θ): respondent skill; higher → higher success odds.
 - Difficulty (δ): item hardness; higher → harder even for strong respondents.
-- Discrimination (𝑎): slope near δ.
-- Guessing (𝑐): floor for multiple-choice exams (rare here).
+- Discrimination (𝑎): slope near δ (2PL).
+- Guessing (𝑐): floor for multiple-choice exams (rare here) (3PL).
 
   </div>
   <div class="col">
 
-**Ensemble Analogy**
+## **Translated to Tree Ensemble Analogy**
 
 - Respondents → decision trees on a shared test set.
 - Items → images; responses are binary (tree correct?).
@@ -103,7 +114,6 @@ footer: ATS&copy;2025
 - Outputs: posteriors over θᵢ, δⱼ, and information curves.
 
   </div>
-</div>
 
 ---
 
@@ -116,57 +126,107 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 - Single global slope keeps parameters on a shared logit scale.
 - θ − δ = 0 ⇒ 50% success; shifts left/right change odds.
-- Fisher information peaks where curves are steepest—prime for spotting uncertainty.
-- <a href="https://ascott02.github.io/irt.html">IRT ICC Visualizer</a>
+- Fisher information peaks where curves are steepest.
+- See <a href="https://ascott02.github.io/irt.html">IRT ICC Visualizer</a> for 2PL, 3PL, 4PL
 
   </div>
   <div class="col" style="text-align:center;">
   <center>
-    <img src="figures/irt/rasch_curve.png" style="width:100%; border:1px solid #ccc;" />
-    <p style="font-size:85%;">1PL logistic curves for items of varying difficulty</p>
+    <img width="85%" src="figures/irt/rasch_curve.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:85%;">1PL Item Characteristic Curves (ICC)</p>
     </center>
   </div>
 </div>
 
 ---
 
-# What We Extract from IRT
+# IRT Output
 
 - **Ability histograms** flag low-skill trees worth pruning.
 - **Difficulty ladders** highlight mislabeled or ambiguous items.
 - **Wright maps** overlay θ and δ to expose coverage gaps.
 - **Information curves** reveal where ensemble confidence is fragile.
-- Together they explain *who* struggles and *why* beyond RF metrics.
+- Together they explain *who* struggles and *why*, beyond RF metrics.
+
 
 ---
 
-# Margins, Entropy, and Ensemble Confidence
+# Random Forests — Many Noisy Trees, One Stable Voice
 
-- Tree votes yield class probabilities we mine for uncertainty signals.
-- **Margin** $m(x) = P(\hat{y}=y_{true}) - \max_{c \neq y_{true}} P(\hat{y}=c)$ near 0 marks ambiguity; negative marks systematic flips.
-- **Entropy** captures ensemble disagreement; combining both with δ surfaces mislabeled or OOD items and tracks curation gains.
+A **Random Forest** grows lots of trees on **bootstrapped (OOB)** samples  
+and **random subsets of features** at each split.
+
+This randomness:
+- decorrelates trees → lowers variance,  
+- lets each tree explore a different view of the data.
+
+Final prediction = **majority vote** (classification) or **mean** (regression).  
+
+**Margins:** how much more the correct class wins over the runner-up → a measure of confidence.  
+**Entropy:** how uncertain the ensemble is — low entropy = decisive forest, high entropy = disagreement.
+
+- Trees are fragile storytellers; forests are resilient crowds.  
+- Margins and entropy tell you how loudly, and how harmoniously, that crowd speaks.
+- Combining both with δ surfaces mislabeled or OOD items and tracks curation gains.
 
 ---
+
+# Random Forest Margins — How Confident Is the Crowd?
+
+$$ \text{margin}(x_i) =
+P_{\text{correct}}(x_i)
+- \max_{j \neq \text{true}} P_j(x_i) $$
+
+The **margin** measures how far ahead the correct class is
+over its nearest competitor.
+
+- **High margin:** trees vote strongly for the right class → confident.  
+- **Low or negative margin:** trees disagree or favor another class → uncertain.  
+
+> Think of it as the *vote gap* in an election — the wider the gap, the clearer the win.
+
+---
+
+# Ensemble Entropy — How Much Do Trees Disagree?
+
+$$ H(x_i) = - \sum_j P_j(x_i) \log_2 P_j(x_i) $$
+
+The **entropy** measures how dispersed the votes are across classes.
+
+- **Low entropy:** trees nearly unanimous → decisive prediction.  
+- **High entropy:** votes spread out → uncertainty or class confusion.  
+
+> Within trees, entropy drives splits (purity).  
+> Across trees, entropy reveals disagreement — the forest’s collective uncertainty.
+
+---
+
+# GenAI in the Loop Scientific Experimentation
+
+- Recursive Prompting, (similar to <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Context Engineering</a>)
+- Start from focused `README.md` spec outlining goals, datasets, and diagnostics.
+- Automate CLI runs to iterate every experiment end-to-end.
+- Promoted results/figures/tables into this deck!
+- Commit, push, rinse, and repeat...
+- <a href="https://github.com/ascott02/IRTForests">github.com/ascott02/IRTForests</a>
+
+---
+
 
 # Pipeline Overview
 
 <div class="columns">
   <div class="col">
 
-**Data Prep (done)**
+**Data Preperation**
 
 - Stratified CIFAR-10 subset: 10k / 2k / 2k splits.
-- Resize 64×64, normalize, PCA → 128-D embeddings (plus MobileNet-V3 cache).
+- Resize 64×64, normalize, PCA → 128-D embeddings, and MobileNet-V3 embeddings.
 - MNIST mini: 4k / 800 / 800 digits, normalized 28×28 grayscale.
-- Artifacts cached in `data/cifar10_subset.npz`, `data/cifar10_embeddings.npz`, and `data/mnist/mnist_split.npz`.
 
-  </div>
+**Random Foreset Training**
 
-  <div class="col">
-
-**Modeling Status**
-
-- RF (200 trees) trained for every study; metrics and importances saved.
+- RF (2000 trees) trained for every study; metrics and importances saved.
 - Response matrices persisted: CIFAR `(2000 × 2000)` for PCA & MobileNet, MNIST `(2000 × 800)`.
 - 1PL Rasch (SVI, 600 epochs) complete for CIFAR; MNIST mirrors the same notebook.
 
@@ -182,7 +242,6 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 | CIFAR-10 subset | 10,000 | 2,000 | 2,000 | 64×64 RGB → PCA-128 / MobileNet-V3 (960-D) | Shared splits across Study I & II |
 | MNIST mini | 4,000 | 800 | 800 | 28×28 grayscale → raw pixels (no PCA) | Control for clean handwriting |
 
-- All studies reuse cached artifacts under `data/`.
 - CIFAR runs differ only by embeddings; labels and splits stay fixed.
 - MNIST mirrors the workflow to confirm signals on cleaner data.
 
@@ -803,24 +862,24 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 - Mean 𝑎 settles at **0.27 ± 0.15** with a modest tail (max ≈1.16).
 - 𝑎 correlates with margin at **−0.32** and with entropy at **+0.10**, keeping residual cat/dog confusion in focus while the easy cluster sharpens.
 - Discrimination concentrates in the tails: the easiest (high-margin, low-entropy) and hardest (low-margin, high-entropy) images keep higher 𝑎, while mid-uncertainty cases flatten out.
+- Signal hides in the extremes: hard animal confusions and trivially easy scenes are what still separate trees, while average items contribute little discrimination.
 - Artifacts: `data/mobilenet/irt_parameters_2pl.npz`, `data/mobilenet/rf_irt_correlations_2pl.json`, `figures/mobilenet_2pl_*`.
 
 <div class="columns">
   <div class="col">
 
   <center>
-    <img width="85%" src="figures/mobilenet_2pl_discrimination_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+    <img width="75%" src="figures/mobilenet_2pl_discrimination_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
   </center>
   </div>
   <div class="col">
 
   <center>
-    <img width="85%" src="figures/mobilenet_2pl_discrimination_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
+    <img width="75%" src="figures/mobilenet_2pl_discrimination_vs_entropy.png" style="width:100%; border:1px solid #ccc;" />
   </center>
   </div>
 </div>
 
-- Signal hides in the extremes: hard animal confusions and trivially easy scenes are what still separate trees, while average items contribute little discrimination.
 
 ---
 
@@ -902,3 +961,83 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 - Run stability sweeps (50/100 trees, alternate seeds) to quantify variance in 𝑎 and θ.
 - Decide whether 3PL merits extension to PCA/MNIST or documenting as MobileNet-only.
 - Finish item-tier overlays (high/medium/low 𝑎) and align them with the qualitative grids.
+
+--- 
+
+# Decision Trees — From Data to Splits
+
+<div class="columns">
+  <div class="col">
+
+**Idea:** recursively split data to  increase *purity* of labels.  
+
+Example:  
+> “PetalLength < 2.5?” → all *Setosa* left, others right.
+
+At each node:
+- compute **impurity** (e.g., *entropy* or *Gini*):
+  $$ H = -\sum_i p_i \log_2 p_i $$
+- choose the split that **maximally reduces impurity** — i.e. makes groups more uniform.  
+
+A single tree = a set of *if–then* rules that classify or predict.
+  </div>
+
+  <div class="col">
+
+<div class="col">
+
+<center>
+
+| PetalLength | PetalWidth | Species |
+|--------------|-------------|----------|
+| 1.4 | 0.2 | Setosa |
+| 4.7 | 1.4 | Versicolor |
+| 5.5 | 2.0 | Virginica |
+
+<br />
+<br />
+<img width="65%" src="iris.svg">
+
+</center>
+</div>
+
+</div>
+
+
+---
+
+# Gini vs. Entropy — Two Lenses on Node Impurity
+
+<div class="columns">
+<div class="col">
+
+**Entropy (Information Theory):**
+
+$$ H = - \sum_i p_i \log_2 p_i $$
+
+Measures **uncertainty** —  expected information (in bits) needed to classify a random sample.  *High when classes are evenly mixed.*
+</div>
+
+<div class="col">
+
+**Gini Impurity (Probability of Misclassification):**
+
+$$ G = 1 - \sum_i p_i^2 $$
+
+Measures **chance of error** —  probability that two randomly drawn samples from the node  belong to different classes.
+</div>
+</div>
+
+
+<center>
+
+| Metric | Theoretical Lens | Interpretation | Typical Use |
+|---------|------------------|----------------|--------------|
+| **Entropy** | Information theory | “How surprised would I be?” | ID3, C4.5 trees |
+| **Gini** | Probability theory | “How often would I be wrong?” | CART trees, scikit-learn default |
+</center>
+
+> Both peak when classes are perfectly mixed (p = 0.5).  
+> Gini is slightly flatter — faster to compute, less sensitive to extremes.
+
+

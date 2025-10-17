@@ -1,0 +1,26 @@
+digraph IrisMiniTree {
+  graph [rankdir=TB, splines=true, nodesep=0.6, ranksep=0.7, ordering=out];
+  node  [shape=box, style="rounded,filled", color="#333333", fontname="Helvetica", fillcolor="#f8f8f8"];
+  edge  [fontname="Helvetica"];
+
+  // Root split from the table
+  root  [label="PetalLength < 2.5?"];
+
+  // Right-branch split
+  pw    [label="PetalWidth < 1.8?"];
+
+  // Leaves
+  setosa     [label="Setosa",     fillcolor="#dff5df"];
+  versicolor [label="Versicolor", fillcolor="#ffe2c9"];
+  virginica  [label="Virginica",  fillcolor="#e9dcff"];
+
+  // Structure (Setosa explicitly placed as the left child)
+  root -> setosa [label="Yes"];
+  root -> pw     [label="No"];
+
+  pw -> versicolor [label="Yes"];
+  pw -> virginica  [label="No"];
+
+  // Keep Setosa and the pw node aligned horizontally as siblings
+  { rank = same; setosa; pw; }
+}
