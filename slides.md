@@ -759,12 +759,15 @@ The **entropy** measures how dispersed the votes are across classes.
 
 **Fit diagnostics**
 
+<center>
+
 | Metric | Value |
 |---|---|
 | Item infit μ / p95 | 0.23 / 0.38 |
 | Item outfit μ / p95 | 0.22 / 0.37 |
 | Tree infit μ / p95 | 0.30 / 0.32 |
 | Tree outfit μ / p95 | 0.22 / 0.25 |
+</center>
 
 - Rasch residuals stay tight (|z| < 0.07), confirming the control study’s consistency.
 
@@ -899,12 +902,18 @@ The **entropy** measures how dispersed the votes are across classes.
 
 - 1k-epoch 3PL run (lr 0.01) lands at guess mean **0.35 ± 0.16**.
 - θ vs accuracy stays tight (Pearson **0.98**); slopes average **0.32 ± 0.08** with a broader tail.
-- High guess mass piles onto background-heavy aircraft & cats, reinforcing the “guessing” narrative.
+- High guess mass piles onto the ambiguous animal scenes (low margin, high entropy), reinforcing the “guessing” narrative.
 
-<center>
-  <img width="86%" src="figures/mobilenet_3pl_guessing.png" style="width:100%; border:1px solid #ccc;" />
-  <p style="font-size:72%; text-align:center;">3PL MobileNet · Guess distribution (left) and entropy hotspots (right)</p>
-</center>
+<div class="columns">
+  <div class="col">
+    <img src="figures/mobilenet_3pl_guess_hist.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:72%; text-align:center;">3PL MobileNet · Guess distribution</p>
+  </div>
+  <div class="col">
+    <img src="figures/mobilenet_3pl_guess_vs_margin.png" style="width:100%; border:1px solid #ccc;" />
+    <p style="font-size:72%; text-align:center;">3PL MobileNet · Guess vs Margin (colored by entropy)</p>
+  </div>
+</div>
 
 ---
 
