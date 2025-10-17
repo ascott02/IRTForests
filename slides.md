@@ -55,10 +55,10 @@ footer: ATS &copy; 2025
 
 # Agenda
 
-- Background: IRT Background, RF Background
-- Pipeline: Datasets, embeddings, and response matrices powering the studies.
-- Case Studies: Baseline CIFAR (PCA), CIFAR (MobileNet), and MNIST, RF and 1PLs.
-- Cross-study comparison, 2PLs, 3PL, takeaways, and next steps.
+- Background: IRT + RF primers
+- Pipeline: datasets, embeddings, and response matrices
+- Case studies: CIFAR (PCA), CIFAR (MobileNet), MNIST
+- Cross-study comparison, 2PL/3PL updates, takeaways, next steps
 
 ---
 
@@ -152,22 +152,10 @@ $$\Pr(R_{ij}=1 \mid \theta_i, \delta_j) = \frac{1}{1 + e^{- (\theta_i - \delta_j
 
 # Random Forests — Many Noisy Trees, One Stable Voice (Breiman, 2001)
 
-A **Random Forest** grows many trees on **bootstrapped (OOB)** samples and **random subsets of features** at each split.
-
-The randomness:
-- decorrelates trees → lowers variance,  
-- lets each tree explore a different view of the data.
-
-Final prediction = **majority vote** (classification) or **mean** (regression).  
-
-**Margins:** how much more the correct class wins over the runner-up → a measure of confidence.  
-**Entropy:** how uncertain the ensemble is — low entropy = decisive forest, high entropy = disagreement.
-
-- Trees are fragile storytellers; forests are resilient crowds.  
-- Margins and entropy tell you how loudly, and how harmoniously, that crowd speaks.
-
-
-*Insight: Combining margin and entropy with δ surfaces mislabeled or OOD items and tracks curation gains.*
+- Train trees on bootstrapped samples with random feature subsets to decorrelate their votes.
+- Aggregate those votes by majority (classification) or mean (regression) to cut variance.
+- **Margin:** gap between the correct class and the runner-up; **entropy:** dispersion of votes.
+- Reading the two together exposes how confident—or conflicted—the forest is, especially once aligned with δ.
 
 
 ---
@@ -203,12 +191,10 @@ The **entropy** measures how dispersed the votes are across classes.
 
 # GenAI in the Loop Scientific Experimentation
 
-- Recursive Prompting, (similar to <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Context Engineering</a>)
-- Start from focused `README.md` spec outlining goals, datasets, and diagnostics.
-- Automate CLI runs to iterate every experiment end-to-end.
-- Promoted results/figures/tables into this deck!
-- Commit, push, rinse, and repeat...
-- <a href="https://github.com/ascott02/IRTForests">github.com/ascott02/IRTForests</a>
+- Recursive prompting (akin to <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">context engineering</a>) keeps each iteration scoped.
+- Ground every cycle in the `README.md` spec—goals, datasets, diagnostics.
+- Automate the CLI so runs regenerate figures and tables straight into the deck.
+- Commit, push, repeat: <a href="https://github.com/ascott02/IRTForests">github.com/ascott02/IRTForests</a>
 
 > Plastic tubes and pots and pans
 > Bits and pieces and the magic from the hand - Oingo Boingo, "Weird Science" 1985
@@ -221,18 +207,18 @@ The **entropy** measures how dispersed the votes are across classes.
 <div class="columns">
   <div class="col">
 
-**Data Preperation for 3 Experiements**
+**Data preparation for three studies**
 
 1. Stratified CIFAR-10 subset: 10k / 2k / 2k splits. Resize 64×64, normalize, PCA → 128-D embeddings.
 2. Stratified CIFAR-10 subset: 10k / 2k / 2k splits. Resize 64×64, normalize, MobileNet → 960-D embeddings.
 3. MNIST mini: 4k / 800 / 800 digits, normalized 28×28 grayscale. Raw pixels.
 
-**Random Foreset Training**
+**Random forest training**
 
 - RF (2000 trees) trained for every study; metrics and importances saved.
 - Response matrices saved: CIFAR `(2000 × 2000)` for PCA & MobileNet, MNIST `(2000 × 800)`.
 
-**IRT Analsysis**
+**IRT analysis**
 - 1PL Rasch (SVI, 600 epochs) complete for CIFAR+PCA, CIFAR+MobileNet, and MNIST.
 - 2PL (SVI, 800 epochs) complete for CIFAR+PCA, CIFAR+MobileNet, and MNIST.
 - 3PL (SVI, 1000 epochs) CIFAR MobileNet only.
@@ -266,12 +252,12 @@ The **entropy** measures how dispersed the votes are across classes.
 <div class="columns">
   <div class="col">
     <ul>
-  <li>Establish the PCA baseline and RF uncertainty signals.</li>
+  <li>Establish the PCA baseline and capture RF uncertainty signals.</li>
   <li>Use IRT to pinpoint weak trees and hard items that motivate stronger features.</li>
-  <li>Fixed stratified CIFAR-10 split (10k/2k/2k).</li>
-  <li>Train, and test 2000 trees
-  <li>Response matrix 2000 × 2000 with mean tree accuracy.</li>
-  <li>Artifacts: Metrics, Margins, Entropy, IRT outputs.</li>
+  <li>Fix a stratified CIFAR-10 split (10k / 2k / 2k).</li>
+  <li>Train 2000 trees and score them on the shared test set.</li>
+  <li>Build a 2000 × 2000 response matrix (mean tree accuracy ≈ 0.18).</li>
+  <li>Artifacts: metrics, margins, entropy, IRT outputs.</li>
     </ul>
   </div>
 
@@ -529,7 +515,7 @@ The **entropy** measures how dispersed the votes are across classes.
   </div>
   <div class="col">
   <center>
-    <img width="84%%" src="figures/mobilenet/wright_map.png" style="width:100%; border:1px solid #ccc;" />
+    <img width="84%" src="figures/mobilenet/wright_map.png" style="width:100%; border:1px solid #ccc;" />
   <p style="font-size:85%; text-align:center;">Wright map: θ ≈ −0.46 ± 0.23; δ spans ±2.1</p>
   </center>
   </div>
@@ -632,12 +618,11 @@ The **entropy** measures how dispersed the votes are across classes.
 <div class="columns">
   <div class="col">
 
- - Probe the pipeline on a high-signal, low-noise dataset.
-- Lightweight handwriting dataset to validate RF × IRT beyond CIFAR-10.
+- Probe the pipeline on a high-signal, low-noise dataset.
+- Use a lightweight handwriting set to validate RF × IRT beyond CIFAR-10.
 - Confirm that IRT still mirrors RF uncertainty when accuracy is near perfect.
-- Acts as a control where ambiguity is rare yet still detectable.
+- Treat it as a control case where ambiguity is rare yet still detectable.
 
- 
 
   </div>
   <div class="col">
@@ -813,9 +798,9 @@ The **entropy** measures how dispersed the votes are across classes.
 
 - <small>*Std(θ) measures tree ability spread; Std(δ) measures item difficulty spread.*</small>
 
-- Across studies δ remains negatively correlated with margin and positively correlated with entropy: PCA lands near −0.82, MobileNet tightens to −0.95, and MNIST saturates the scale at −0.98.
-- θ spread remains compact (Std(θ) ≈ 0.15–0.29) even with 2000 trees; MobileNet widens slightly as headroom grows.
-- Difficulty variance balloons on MobileNet (Std(δ) ≈ 0.87) while MNIST stays moderate, underscoring how rich features surface nuanced “hard” digits.
+- δ stays negative with margin and positive with entropy for every study (−0.82/−0.95/−0.98 vs +0.69/+0.88/+0.97).
+- θ spread remains compact (Std(θ) ≈ 0.15–0.29); MobileNet is only slightly wider as headroom grows.
+- Difficulty variance jumps on MobileNet (Std(δ) ≈ 0.87) while MNIST stays moderate, highlighting how rich features surface nuanced “hard” digits.
 
 ---
 
