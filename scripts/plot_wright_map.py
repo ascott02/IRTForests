@@ -46,13 +46,20 @@ def plot_wright_map(
     bins: int,
     output: Path,
 ) -> None:
+    # Anchor both distributions so the mean tree ability lands at zero.
+    ability_mean = ability.mean()
+    ability_centered = ability - ability_mean
+    difficulty_centered = difficulty - ability_mean
+    ability_centered_mean = ability_centered.mean()
+    difficulty_centered_mean = difficulty_centered.mean()
+
     output.parent.mkdir(parents=True, exist_ok=True)
     fig, (ax_top, ax_bottom) = plt.subplots(
         nrows=2, ncols=1, figsize=(7.5, 5.5), sharex=True, height_ratios=[1, 1.2]
     )
 
     ax_top.hist(
-        ability,
+        ability_centered,
         bins=bins,
         color="#377eb8",
         alpha=0.8,
@@ -60,29 +67,32 @@ def plot_wright_map(
     )
     ax_top.set_ylabel("Tree Count")
     ax_top.set_title("Wright Map: Tree Ability (θ) vs Item Difficulty (δ)")
-    ax_top.axvline(ability.mean(), color="#1f78b4", linestyle="--", linewidth=1.2)
+    ax_top.axvline(0.0, color="#1f78b4", linestyle="--", linewidth=1.2)
     ax_top.text(
-        ability.mean(),
+        0.0,
         ax_top.get_ylim()[1] * 0.9,
-        f"mean θ = {ability.mean():.2f}",
+        f"mean θ (anchored) = {ability_centered_mean:.2f}",
         color="#1f78b4",
         ha="left",
     )
 
     ax_bottom.hist(
-        difficulty,
+        difficulty_centered,
         bins=bins,
         color="#e41a1c",
         alpha=0.8,
         edgecolor="white",
     )
     ax_bottom.set_ylabel("Item Count")
-    ax_bottom.set_xlabel("Latent Scale")
-    ax_bottom.axvline(difficulty.mean(), color="#b22222", linestyle="--", linewidth=1.2)
+    ax_bottom.set_xlabel("Latent Scale (θ anchored at 0)")
+    ax_bottom.axvline(
+        difficulty_centered_mean, color="#b22222", linestyle="--", linewidth=1.2
+    )
+    ax_bottom.axvline(0.0, color="gray", linestyle=":", linewidth=1.0)
     ax_bottom.text(
-        difficulty.mean(),
+        difficulty_centered_mean,
         ax_bottom.get_ylim()[1] * 0.9,
-        f"mean δ = {difficulty.mean():.2f}",
+        f"mean δ (anchored) = {difficulty_centered_mean:.2f}",
         color="#b22222",
         ha="left",
     )

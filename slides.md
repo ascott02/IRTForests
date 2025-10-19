@@ -68,7 +68,7 @@ footer: ATS &copy; 2025, CC-BY 4.0
 
 - Background: IRT + RF primers
 - Pipeline: datasets, embeddings, and response matrices
-- Case studies: CIFAR (PCA), CIFAR (MobileNet), MNIST
+- Case studies: Rasch Family models (1PL) on CIFAR (PCA), CIFAR (MobileNet), MNIST
 - Cross-study comparison, 2PL/3PL updates, takeaways, next steps
 
 ---
@@ -331,13 +331,13 @@ The **entropy** measures how dispersed the votes are across classes.
   <div class="col">
   <center>
   <img width="84%" src="figures/wright_map.png" style="width:95%; border:1px solid #ccc;" />
-  <p style="font-size:85%; text-align:center;">Wright map: θ mean ≈ −11.0 (σ ≈ 0.56); δ mean ≈ 5.8 with a wide tail</p>
+  <p style="font-size:85%; text-align:center;">Wright map: δ pushes deep into the positive tail</p>
     </center>
   </div>
 </div>
 
-- θ ranges from about −12.8 to −8.9 (mean ≈ −11.0 ± 0.56), so even small shifts separate stronger trees by a few percentage points.
-- δ centers near 5.8 but stretches from roughly −11.5 to 13.4, highlighting how ambiguous animal items sit far from the easy tail.
+- θ falls between roughly −1.9 and +2.1 logits, so even modest shifts still separate stronger trees by a few percentage points.
+- δ ranges from about −0.5 to +24 logits after centering, highlighting how ambiguous animal items sit far from the easy tail.
 
 ---
 
@@ -527,12 +527,12 @@ The **entropy** measures how dispersed the votes are across classes.
   <div class="col">
   <center>
     <img width="84%" src="figures/mobilenet/wright_map.png" style="width:100%; border:1px solid #ccc;" />
-  <p style="font-size:85%; text-align:center;">Wright map: θ ≈ −0.46 ± 0.23; δ spans ±2.1</p>
+  <p style="font-size:85%; text-align:center;">Wright map: δ stretches about ±16 logits</p>
   </center>
   </div>
 </div>
 
-- θ mean −0.46 ± 0.23 keeps the ensemble tightly banded while still ranking trees cleanly.
+- θ stays within roughly ±2 logits, keeping the ensemble tightly banded while still ranking trees cleanly.
 - Ability remains tied to per-tree accuracy, so feature quality—rather than tree diversity—now caps gains.
 
 ---
@@ -698,12 +698,12 @@ The **entropy** measures how dispersed the votes are across classes.
   <div class="col">
   <center>
     <img width="74%" src="figures/mnist/wright_map.png" style="width:100%; border:1px solid #ccc;" />
-  <p style="font-size:85%; text-align:center;">Wright map: θ mean 3.04 ± 0.29; δ mean −0.13 ± 0.47</p>
+  <p style="font-size:85%; text-align:center;">Wright map: most digits land several logits below</p>
   </center>
   </div>
 </div>
 
-- θ mean 3.04 ± 0.29 shows strong consensus, while δ mean −0.13 ± 0.47 keeps a modest positive tail for ambiguous strokes.
+- θ covers roughly −2.5 to +2.6 logits, underscoring strong consensus, while most δ values sit several logits below the trees with only a handful near the origin.
 - Shared scales expose plentiful easy wins with only a few sharp spikes—opposite of the CIFAR baseline.
 
 
