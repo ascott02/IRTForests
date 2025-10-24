@@ -3,6 +3,7 @@
 marp: true
 theme: default
 paginate: true
+class: invert
 math: katex
 style: |
   section {
@@ -60,7 +61,7 @@ footer: ATS &copy; 2025, CC-BY 4.0
 - Meaning emerges only through a **cohort** — interactions matter  
 - Reminds me of **ensemble methods**, esp. **Random Forests**  
 - Both derive insight from **collective behavior**  
-- **Hypothesis:** Random Forests ↔ IRT — shared latent structure
+- **Hypothesis:** Random Forests map to IRT — shared latent structure
 
 ---
 
